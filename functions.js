@@ -9,7 +9,7 @@ canvas.height = canvas.width;
 const board = createCanvas(canvas.width, canvas.width);
 const brdCtx = board.getContext("2d");
 
-brdCtx.fillStyle = "#100";
+brdCtx.fillStyle = "#200";
 brdCtx.fillRect(0, 0, canvas.width, canvas.width);
 brdCtx.fillStyle = "#800";
 for (var x = 0; x < 8; x++) {
@@ -31,9 +31,10 @@ function fillshape(tmpCtx, colour, outline) {
     tmpCtx.stroke();
     tmpCtx.fillStyle = colour;
     tmpCtx.fill();
-    tmpCtx.lineWidth = 2;
+    tmpCtx.lineWidth = 1;
 }
 
+//rook
 function drawRook(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -80,11 +81,53 @@ function drawRook(colour, outline) {
     tmpCtx.lineTo(scalePoint(66), scalePoint(80));
     tmpCtx.lineTo(scalePoint(59.5), scalePoint(80));
     tmpCtx.stroke();
+    tmpCtx.stroke();
     return temp;
 }
 
 const blckRk = drawRook("#000", "#fff");
 const whtRk = drawRook("#fff", "#000");
+
+//knight
+function drawKnight(colour, outline) {
+	const temp = createCanvas(grid, grid);
+    const tmpCtx = temp.getContext("2d");
+    tmpCtx.beginPath();
+    tmpCtx.moveTo(scalePoint(46), scalePoint(27));
+    tmpCtx.quadraticCurveTo(scalePoint(50), scalePoint(25), scalePoint(54), scalePoint(27));
+    tmpCtx.lineTo(scalePoint(60), scalePoint(10));
+    tmpCtx.bezierCurveTo(scalePoint(65), scalePoint(20), scalePoint(60), scalePoint(30), scalePoint(57), scalePoint(30));
+	tmpCtx.lineTo(scalePoint(60), scalePoint(35));
+	tmpCtx.quadraticCurveTo(scalePoint(64), scalePoint(38), scalePoint(60), scalePoint(45));
+	tmpCtx.bezierCurveTo(scalePoint(62), scalePoint(52), scalePoint(54), scalePoint(65), scalePoint(58), scalePoint(75));
+	tmpCtx.bezierCurveTo(scalePoint(60), scalePoint(80), scalePoint(60), scalePoint(81), scalePoint(56), scalePoint(87));
+    tmpCtx.bezierCurveTo(scalePoint(55), scalePoint(92), scalePoint(54), scalePoint(90), scalePoint(50), scalePoint(90));
+    tmpCtx.bezierCurveTo(scalePoint(46), scalePoint(90), scalePoint(45), scalePoint(92), scalePoint(44), scalePoint(87));
+    tmpCtx.bezierCurveTo(scalePoint(40), scalePoint(81), scalePoint(40), scalePoint(80), scalePoint(42), scalePoint(75));
+    tmpCtx.bezierCurveTo(scalePoint(46), scalePoint(65), scalePoint(38), scalePoint(52), scalePoint(40), scalePoint(45));
+    tmpCtx.quadraticCurveTo(scalePoint(36), scalePoint(38), scalePoint(40), scalePoint(35));
+    tmpCtx.lineTo(scalePoint(43), scalePoint(30));
+    tmpCtx.bezierCurveTo(scalePoint(40), scalePoint(30), scalePoint(35), scalePoint(20), scalePoint(40), scalePoint(10));
+    tmpCtx.closePath();
+    fillshape(tmpCtx, colour, outline);
+	tmpCtx.moveTo(scalePoint(55), scalePoint(86));
+	tmpCtx.bezierCurveTo(scalePoint(53), scalePoint(80), scalePoint(58), scalePoint(77), scalePoint(57), scalePoint(76));
+	tmpCtx.stroke();
+	tmpCtx.moveTo(scalePoint(45), scalePoint(86));
+	tmpCtx.bezierCurveTo(scalePoint(47), scalePoint(80), scalePoint(42), scalePoint(77), scalePoint(43), scalePoint(76));
+	tmpCtx.stroke();
+	tmpCtx.moveTo(scalePoint(59), scalePoint(36));
+	tmpCtx.lineTo(scalePoint(58), scalePoint(39));
+	tmpCtx.stroke();
+	tmpCtx.moveTo(scalePoint(41), scalePoint(36));
+	tmpCtx.lineTo(scalePoint(42), scalePoint(39));
+	tmpCtx.stroke();
+	tmpCtx.stroke();
+    return temp;
+}
+
+const blckknght = drawKnight("#000", "#fff");
+const whtknght = drawKnight("#fff", "#000");
 
 //classes
 class player {
@@ -155,10 +198,14 @@ const players = [new player("White"), new player("Black")];
 //white player
 players[0].pieces.push(new rook(new coor(0, 7), whtRk));
 players[0].pieces.push(new rook(new coor(7, 7), whtRk));
+players[0].pieces.push(new knight(new coor(1, 7), whtknght));
+players[0].pieces.push(new knight(new coor(6, 7), whtknght));
 
 //black player
 players[1].pieces.push(new rook(new coor(0, 0), blckRk));
 players[1].pieces.push(new rook(new coor(7, 0), blckRk));
+players[1].pieces.push(new knight(new coor(1, 0), blckknght));
+players[1].pieces.push(new knight(new coor(6, 0), blckknght));
 
 drawGame();
 
