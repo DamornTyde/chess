@@ -63,13 +63,10 @@ function drawRook(colour, outline) {
     fillshape(tmpCtx, colour, outline);
     tmpCtx.moveTo(scalePoint(42), scalePoint(90));
     tmpCtx.quadraticCurveTo(scalePoint(50), scalePoint(50), scalePoint(58), scalePoint(90));
-    tmpCtx.stroke();
     tmpCtx.moveTo(scalePoint(38), scalePoint(90));
     tmpCtx.quadraticCurveTo(scalePoint(50), scalePoint(40), scalePoint(62), scalePoint(90));
-    tmpCtx.stroke();
     tmpCtx.moveTo(scalePoint(50), scalePoint(70));
     tmpCtx.lineTo(scalePoint(50), scalePoint(90));
-    tmpCtx.stroke();
     tmpCtx.moveTo(scalePoint(40.5), scalePoint(80));
     tmpCtx.lineTo(scalePoint(34), scalePoint(80));
     tmpCtx.lineTo(scalePoint(34), scalePoint(15));
@@ -80,7 +77,6 @@ function drawRook(colour, outline) {
     tmpCtx.lineTo(scalePoint(66), scalePoint(15));
     tmpCtx.lineTo(scalePoint(66), scalePoint(80));
     tmpCtx.lineTo(scalePoint(59.5), scalePoint(80));
-    tmpCtx.stroke();
     tmpCtx.stroke();
     return temp;
 }
@@ -112,16 +108,12 @@ function drawKnight(colour, outline) {
     fillshape(tmpCtx, colour, outline);
 	tmpCtx.moveTo(scalePoint(55), scalePoint(86));
 	tmpCtx.bezierCurveTo(scalePoint(53), scalePoint(80), scalePoint(58), scalePoint(77), scalePoint(57), scalePoint(76));
-	tmpCtx.stroke();
 	tmpCtx.moveTo(scalePoint(45), scalePoint(86));
 	tmpCtx.bezierCurveTo(scalePoint(47), scalePoint(80), scalePoint(42), scalePoint(77), scalePoint(43), scalePoint(76));
-	tmpCtx.stroke();
 	tmpCtx.moveTo(scalePoint(59), scalePoint(36));
 	tmpCtx.lineTo(scalePoint(58), scalePoint(39));
-	tmpCtx.stroke();
 	tmpCtx.moveTo(scalePoint(41), scalePoint(36));
 	tmpCtx.lineTo(scalePoint(42), scalePoint(39));
-	tmpCtx.stroke();
 	tmpCtx.stroke();
     return temp;
 }
