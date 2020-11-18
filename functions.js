@@ -24,6 +24,7 @@ function scalePoint(i) {
 }
 
 function fillshape(tmpCtx, colour, outline) {
+	tmpCtx.closePath();
     tmpCtx.strokeStyle = outline;
     tmpCtx.lineWidth = scalePoint(6);
     tmpCtx.lineCap = "round";
@@ -59,7 +60,6 @@ function drawRook(colour, outline) {
     tmpCtx.lineTo(scalePoint(46), scalePoint(15));
     tmpCtx.lineTo(scalePoint(38), scalePoint(15));
     tmpCtx.lineTo(scalePoint(38), scalePoint(10));
-    tmpCtx.closePath();
     fillshape(tmpCtx, colour, outline);
     tmpCtx.moveTo(scalePoint(42), scalePoint(90));
     tmpCtx.quadraticCurveTo(scalePoint(50), scalePoint(50), scalePoint(58), scalePoint(90));
@@ -104,7 +104,6 @@ function drawKnight(colour, outline) {
     tmpCtx.quadraticCurveTo(scalePoint(36), scalePoint(38), scalePoint(40), scalePoint(35));
     tmpCtx.lineTo(scalePoint(43), scalePoint(30));
     tmpCtx.bezierCurveTo(scalePoint(40), scalePoint(30), scalePoint(35), scalePoint(20), scalePoint(40), scalePoint(10));
-    tmpCtx.closePath();
     fillshape(tmpCtx, colour, outline);
 	tmpCtx.moveTo(scalePoint(55), scalePoint(86));
 	tmpCtx.bezierCurveTo(scalePoint(53), scalePoint(80), scalePoint(58), scalePoint(77), scalePoint(57), scalePoint(76));
@@ -120,6 +119,38 @@ function drawKnight(colour, outline) {
 
 const blckknght = drawKnight("#000", "#fff");
 const whtknght = drawKnight("#fff", "#000");
+
+//bishop
+function drawBishop(colour, outline) {
+	const temp = createCanvas(grid, grid);
+    const tmpCtx = temp.getContext("2d");
+    tmpCtx.beginPath();
+	tmpCtx.moveTo(scalePoint(20), scalePoint(90));
+	tmpCtx.lineTo(scalePoint(10), scalePoint(50));
+	tmpCtx.quadraticCurveTo(scalePoint(20), scalePoint(20), scalePoint(50), scalePoint(10));
+	tmpCtx.quadraticCurveTo(scalePoint(80), scalePoint(20), scalePoint(90), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(80), scalePoint(90));
+	fillshape(tmpCtx, colour, outline);
+	tmpCtx.beginPath();
+	tmpCtx.moveTo(scalePoint(45), scalePoint(85));
+	tmpCtx.lineTo(scalePoint(50), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(15), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(20), scalePoint(40));
+	tmpCtx.lineTo(scalePoint(50), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(45), scalePoint(20));
+	tmpCtx.lineTo(scalePoint(55), scalePoint(20));
+	tmpCtx.lineTo(scalePoint(50), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(80), scalePoint(40));
+	tmpCtx.lineTo(scalePoint(85), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(50), scalePoint(50));
+	tmpCtx.lineTo(scalePoint(55), scalePoint(85));
+	tmpCtx.fillStyle = outline;
+	tmpCtx.fill();
+	return temp;
+}
+
+const blckBshp = drawBishop("#000", "#fff");
+const whtBshp = drawBishop("#fff", "#000");
 
 //classes
 class player {
@@ -192,12 +223,16 @@ players[0].pieces.push(new rook(new coor(0, 7), whtRk));
 players[0].pieces.push(new rook(new coor(7, 7), whtRk));
 players[0].pieces.push(new knight(new coor(1, 7), whtknght));
 players[0].pieces.push(new knight(new coor(6, 7), whtknght));
+players[0].pieces.push(new bishop(new coor(2, 7), whtBshp));
+players[0].pieces.push(new bishop(new coor(5, 7), whtBshp));
 
 //black player
 players[1].pieces.push(new rook(new coor(0, 0), blckRk));
 players[1].pieces.push(new rook(new coor(7, 0), blckRk));
 players[1].pieces.push(new knight(new coor(1, 0), blckknght));
 players[1].pieces.push(new knight(new coor(6, 0), blckknght));
+players[1].pieces.push(new bishop(new coor(2, 0), blckBshp));
+players[1].pieces.push(new bishop(new coor(5, 0), blckBshp));
 
 drawGame();
 
