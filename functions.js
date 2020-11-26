@@ -144,6 +144,7 @@ function drawBishop(colour, outline) {
 	tmpCtx.lineTo(scalePoint(85), scalePoint(50));
 	tmpCtx.lineTo(scalePoint(50), scalePoint(50));
 	tmpCtx.lineTo(scalePoint(55), scalePoint(85));
+	tmpCtx.closePath();
 	tmpCtx.fillStyle = outline;
 	tmpCtx.fill();
 	return temp;
@@ -151,6 +152,29 @@ function drawBishop(colour, outline) {
 
 const blckBshp = drawBishop("#000", "#fff");
 const whtBshp = drawBishop("#fff", "#000");
+
+//queen
+function drawQueen(colour, outline) {
+	const temp = createCanvas(grid, grid);
+    const tmpCtx = temp.getContext("2d");
+    tmpCtx.beginPath();
+	tmpCtx.moveTo(scalePoint(35), scalePoint(90));
+	tmpCtx.lineTo(scalePoint(10), scalePoint(25));
+	tmpCtx.lineTo(scalePoint(35), scalePoint(70));
+	tmpCtx.lineTo(scalePoint(30), scalePoint(15));
+	tmpCtx.lineTo(scalePoint(44), scalePoint(65));
+	tmpCtx.lineTo(scalePoint(50), scalePoint(10));
+	tmpCtx.lineTo(scalePoint(56), scalePoint(65));
+	tmpCtx.lineTo(scalePoint(70), scalePoint(15));
+	tmpCtx.lineTo(scalePoint(65), scalePoint(70));
+	tmpCtx.lineTo(scalePoint(90), scalePoint(25));
+	tmpCtx.lineTo(scalePoint(65), scalePoint(90));
+	fillshape(tmpCtx, colour, outline);
+	return temp;
+}
+
+const blckqn = drawQueen("#000", "#fff");
+const whtqn = drawQueen("#fff", "#000");
 
 //classes
 class player {
@@ -225,6 +249,7 @@ players[0].pieces.push(new knight(new coor(1, 7), whtknght));
 players[0].pieces.push(new knight(new coor(6, 7), whtknght));
 players[0].pieces.push(new bishop(new coor(2, 7), whtBshp));
 players[0].pieces.push(new bishop(new coor(5, 7), whtBshp));
+players[0].pieces.push(new queen(new coor(3, 7), whtqn));
 
 //black player
 players[1].pieces.push(new rook(new coor(0, 0), blckRk));
@@ -233,6 +258,7 @@ players[1].pieces.push(new knight(new coor(1, 0), blckknght));
 players[1].pieces.push(new knight(new coor(6, 0), blckknght));
 players[1].pieces.push(new bishop(new coor(2, 0), blckBshp));
 players[1].pieces.push(new bishop(new coor(5, 0), blckBshp));
+players[1].pieces.push(new queen(new coor(3, 0), blckqn));
 
 drawGame();
 
