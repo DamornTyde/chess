@@ -195,7 +195,20 @@ function drawKing(colour, outline) {
 	tmpCtx.lineTo(scalePoint(55), scalePoint(30));
 	tmpCtx.quadraticCurveTo(scalePoint(55), scalePoint(90), scalePoint(90), scalePoint(30));
 	tmpCtx.quadraticCurveTo(scalePoint(75), scalePoint(65), scalePoint(75), scalePoint(90));
-	fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline);
+    tmpCtx.beginPath();
+    tmpCtx.moveTo(scalePoint(50), scalePoint(85));
+    tmpCtx.lineTo(scalePoint(45), scalePoint(75));
+    tmpCtx.lineTo(scalePoint(50), scalePoint(65));
+    tmpCtx.lineTo(scalePoint(55), scalePoint(75));
+    tmpCtx.fillStyle = outline;
+    tmpCtx.fill();
+    tmpCtx.moveTo(scalePoint(50), scalePoint(65));
+    tmpCtx.lineTo(scalePoint(50), scalePoint(85));
+    tmpCtx.moveTo(scalePoint(45), scalePoint(75));
+    tmpCtx.lineTo(scalePoint(55), scalePoint(75));
+    tmpCtx.strokeStyle = colour;
+    tmpCtx.stroke();
 	return temp;
 }
 
