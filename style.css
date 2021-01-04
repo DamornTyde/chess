@@ -1,4 +1,8 @@
 #game {
-    border: solid 20px #310;
-    margin: 10px;
+    margin: 30px;
+	cursor:pointer;
+}
+
+body {
+	background-color: #310;
 }
