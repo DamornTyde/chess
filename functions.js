@@ -1,20 +1,23 @@
 "use strict"
+const noRotate = !confirm("Do you want the board to be rotated after every turn?");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
+const aniLength = 750;
 
-var grid = 100;
-var turn = 0;
-var slct;
-var msPlc;
-var moveTile = [];
-var captureTile = [];
-var beginAnimation;
-var xa;
-var ya;
-var capturePiece;
-var noAni = true;
+let grid = 100;
+let turn = 0;
+let slct;
+let msPlc;
+let moveTile = [];
+let captureTile = [];
+let enPassantTile = [];
+let beginAnimation;
+let xa;
+let ya;
+let capturePiece;
+let noAni = true;
 
 canvas.width = grid * 8;
 canvas.height = canvas.width;
@@ -30,8 +33,8 @@ const brdCtx = board.getContext("2d");
 brdCtx.fillStyle = "#200";
 brdCtx.fillRect(0, 0, canvas.width, canvas.width);
 brdCtx.fillStyle = "#800";
-for (var x = 0; x < 8; x++) {
-    for (var y = x % 2; y < 8; y += 2) {
+for (let x = 0; x < 8; x++) {
+    for (let y = x % 2; y < 8; y += 2) {
         brdCtx.fillRect(x * grid, y * grid, grid, grid);
     }
 }
@@ -297,7 +300,7 @@ class rook extends piece {
         super("rook", pos, asset);
     }
     move() {
-        for (var i = -1; i < 2; i += 2) {
+        for (let i = -1; i < 2; i += 2) {
             lineCheck(this.pos.x, this.pos.y, i, 0);
             lineCheck(this.pos.x, this.pos.y, 0, i);
         }
@@ -309,8 +312,8 @@ class bishop extends piece {
         super("bishop", pos, asset);
     }
     move() {
-        for (var i = -1; i < 2; i += 2) {
-            for (var i2 = -1; i2 < 2; i2 += 2) {
+        for (let i = -1; i < 2; i += 2) {
+            for (let i2 = -1; i2 < 2; i2 += 2) {
                 lineCheck(this.pos.x, this.pos.y, i, i2);
             }
         }
@@ -322,8 +325,8 @@ class knight extends piece {
         super("knight", pos, asset);
     }
     move() {
-        for (var i = -1; i < 2; i += 2) {
-            for (var i2 = -2; i2 < 3; i2 += 4) {
+        for (let i = -1; i < 2; i += 2) {
+            for (let i2 = -2; i2 < 3; i2 += 4) {
                 tileCheck(this.pos.x + i, this.pos.y + i2);
                 tileCheck(this.pos.x + i2, this.pos.y + i);
             }
@@ -335,14 +338,19 @@ class pawn extends piece {
     constructor(pos, asset, frwrd) {
         super("pawn", pos, asset);
         this.frwrd = frwrd;
+        this.enPassant = -1;
     }
     move() {
         if (freeTile(this.pos.x, this.pos.y + this.frwrd) && (this.pos.y - this.frwrd == 0 || this.pos.y - this.frwrd == 7)) {
             freeTile(this.pos.x, this.pos.y + (this.frwrd * 2));
         }
-        for (var i = -1; i < 2; i += 2) {
+        for (let i = -1; i < 2; i += 2) {
             if (players[(turn + 1) % 2].pieces.findIndex(item => findCoor(item.pos, this.pos.x + i, this.pos.y + this.frwrd)) > -1) {
                 captureTile.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
+            }
+            let temp = players[(turn + 1) % 2].pieces.find(item => findCoor(item.pos, this.pos.x + i, this.pos.y));
+            if (temp != undefined && temp.name == "pawn" && temp.enPassant == turn) {
+                enPassantTile.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
             }
         }
     }
@@ -359,7 +367,7 @@ class coor {
 const players = [new player("White"), new player("Black")];
 
 function placePawns(p, c, a, f) {
-    for (x = 0; x < 8; x++) {
+    for (let x = 0; x < 8; x++) {
         players[p].pieces.push(new pawn(new coor(x, c), a, f));
     }
 }
@@ -388,7 +396,7 @@ placePawns(1, 1, blckPwn, 1);
 
 drawGame();
 
-//misc functions
+//draw game
 function drawGame() {
     ctx.drawImage(board, 0, 0);
     if (msPlc != undefined) {
@@ -410,17 +418,21 @@ function drawGame() {
         });
     });
     ctx.beginPath();
-    captureTile.forEach(function (item) {
-        ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.1));
-        ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.9));
-        ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.9));
-        ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.1));
-    });
+    captureTile.forEach(drawX);
+    enPassantTile.forEach(drawX);
     ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
     ctx.lineWidth = scalePoint(10);
     ctx.stroke();
 }
 
+function drawX(item) {
+    ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.1));
+    ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.9));
+    ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.9));
+    ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.1));
+}
+
+//misc functions
 function createCanvas(w, h) {
     const temp = document.createElement("canvas");
     temp.width = w;
@@ -433,7 +445,7 @@ function findCoor(c, x, y) {
 }
 
 function mirror(i) {
-    if (turn % 2 == 0) {
+    if (noRotate || turn % 2 == 0) {
         return i;
     }
     return 7 - i;
@@ -445,14 +457,22 @@ document.querySelector("body").addEventListener("click", function (e) {
         const y = mirror(Math.floor((e.clientY - canvasy) / grid));
         const x = mirror(Math.floor((e.clientX - canvasx) / grid));
         if (slct != undefined && players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) == -1) {
-            if (moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1) {
+            if (moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1 || enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
                 noAni = false;
                 msPlc = undefined;
-                const capture = players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y));
+                let capture;
+                if (enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
+                    capture = players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y - slct.frwrd));
+                } else {
+                    capture = players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y));
+                }
                 if (capture > -1) {
                     capturePiece = players[(turn + 1) % 2].pieces.splice(capture, 1)[0];
                 } else {
                     capturePiece = undefined;
+                    if (slct.name == "pawn" && moveTile.findIndex(c => findCoor(c, x, y)) == 1) {
+                        slct.enPassant = turn + 1;
+                    }
                 }
                 ctx.drawImage(board, 0, 0);
                 players.forEach(function (item) {
@@ -464,6 +484,9 @@ document.querySelector("body").addEventListener("click", function (e) {
                 });
                 ctx2.drawImage(canvas, 0, 0);
                 slct.drawPiece();
+                if (capturePiece != undefined) {
+                    capturePiece.drawPiece();
+                }
                 beginAnimation = new Date();
                 xa = x;
                 ya = y;
@@ -485,7 +508,7 @@ document.querySelector("body").addEventListener("mousemove", function (e) {
     if (noAni) {
         const y = mirror(Math.floor((e.clientY - canvasy) / grid));
         const x = mirror(Math.floor((e.clientX - canvasx) / grid));
-        if (players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) > -1 || moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1) {
+        if (players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) > -1 || moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1 || enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
             msPlc = new coor(x, y);
         } else {
             msPlc = undefined;
@@ -497,6 +520,7 @@ document.querySelector("body").addEventListener("mousemove", function (e) {
 function clearMoveSet() {
     moveTile = [];
     captureTile = [];
+    enPassantTile = [];
 }
 
 //move checks
@@ -509,7 +533,7 @@ function freeTile(x, y) {
 }
 
 function noPiece(x, y) {
-    for (var p in players) {
+    for (let p in players) {
         if (players[p].pieces.findIndex(i => findCoor(i.pos, x, y)) > -1) {
             return false;
         }
@@ -530,14 +554,14 @@ function tileCheck(x, y) {
 }
 
 function lineCheck(x, y, xM, yM) {
-    var temp = true;
-    for (var i = 1; temp; i++) {
+    let temp = true;
+    for (let i = 1; temp; i++) {
         temp = tileCheck(x + (xM * i), y + (yM * i));
     }
 }
 
 function royalCheck(x, y, r, p) {
-    for (var i = -1; i < 2; i += 2) {
+    for (let i = -1; i < 2; i += 2) {
         royalExend(x, y, r, i, p);
         if (r == 0) {
             royalExend(x, y, i, r, p);
@@ -558,38 +582,42 @@ function royalExend(x, y, xM, yM, p) {
 function movePiece() {
     ctx.drawImage(backup1, 0, 0);
     const now = new Date - beginAnimation;
-    if (now < 500) {
+    if (now < aniLength) {
         if (capturePiece != undefined) {
             ctx.save();
-            ctx.globalAlpha = (500 - now) / 500;
+            ctx.globalAlpha = (aniLength - now) / aniLength;
             capturePiece.drawPiece();
             ctx.restore();
         }
-        const xm = ((mirror(xa) * grid) - (mirror(slct.pos.x) * grid)) / 500;
-        const ym = ((mirror(ya) * grid) - (mirror(slct.pos.y) * grid)) / 500;
+        const xm = ((mirror(xa) * grid) - (mirror(slct.pos.x) * grid)) / aniLength;
+        const ym = ((mirror(ya) * grid) - (mirror(slct.pos.y) * grid)) / aniLength;
         ctx.drawImage(slct.asset, (mirror(slct.pos.x) * grid) + (xm * now), (mirror(slct.pos.y) * grid) + (ym * now));
         window.requestAnimationFrame(movePiece);
     } else {
         slct.pos = new coor(xa, ya);
         slct = undefined;
         drawGame();
-        ctx2.drawImage(canvas, 0 ,0);
         turn++;
-        drawGame();
-        ctx3.drawImage(canvas, 0, 0);
-        ctx.drawImage(backup1, 0, 0);
-        beginAnimation = new Date();
-        window.requestAnimationFrame(mirrorBoard);
+        if (noRotate) {
+            noAni = true;
+        } else {
+            ctx2.drawImage(canvas, 0 ,0);
+            drawGame();
+            ctx3.drawImage(canvas, 0, 0);
+            ctx.drawImage(backup1, 0, 0);
+            beginAnimation = new Date();
+            window.requestAnimationFrame(mirrorBoard);
+        }
     }
 }
 
 function mirrorBoard() {
     const now = new Date - beginAnimation;
-    if (now < 500) {
+    if (now < aniLength) {
         ctx.save();
-        ctx.drawImage(backup1, 0, 0);
-        ctx.globalAlpha = now / 500;
         ctx.drawImage(backup2, 0, 0);
+        ctx.globalAlpha = (aniLength - now) / aniLength;
+        ctx.drawImage(backup1, 0, 0);
         ctx.restore();
         window.requestAnimationFrame(mirrorBoard);
     } else {
