@@ -6,3 +6,42 @@
 body {
 	background-color: #310;
 }
+
+#dark{
+    display: table;
+    position: absolute;
+    margin: 0;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+#mid{
+    display: table-cell;
+    vertical-align: middle;
+}
+
+#info{
+    margin-left: auto;
+    margin-right: auto;
+    width: 1000px;
+    background-color: white;
+    border: black solid 1px;
+}
+
+#info div{
+    margin: 20px;
+    width: 100%;
+}
+
+#info div textarea,
+#info div select{
+    width: 95%;
+}
+
+#info button{
+    margin: 5px 200px;
+}

@@ -5,6 +5,13 @@ const ctx = canvas.getContext("2d");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
 const aniLength = 750;
+const rookAsset = [];
+const knightAsset = [];
+const bishopAsset = [];
+const queenAsset = [];
+const kingAsset = [];
+const pawnAsset = [];
+const promotionOptions = ["Queen", "Knight", "Rook", "Bishop"];
 
 let grid = 100;
 let turn = 0;
@@ -18,6 +25,7 @@ let xa;
 let ya;
 let capturePiece;
 let noAni = true;
+let promotion = undefined;
 
 canvas.width = grid * 8;
 canvas.height = canvas.width;
@@ -40,6 +48,8 @@ for (let x = 0; x < 8; x++) {
 }
 
 //draw pieces
+drawAssets();
+
 function scalePoint(i) {
     return i * (grid / 100);
 }
@@ -54,6 +64,21 @@ function fillshape(tmpCtx, colour, outline) {
     tmpCtx.fillStyle = colour;
     tmpCtx.fill();
     tmpCtx.lineWidth = 1;
+}
+
+function drawAssets() {
+    rookAsset[0] = drawRook("#fff", "#000");
+    rookAsset[1] = drawRook("#000", "#fff");
+    knightAsset[0] = drawKnight("#fff", "#000");
+    knightAsset[1] = drawKnight("#000", "#fff");
+    bishopAsset[0] = drawBishop("#fff", "#000");
+    bishopAsset[1] = drawBishop("#000", "#fff");
+    queenAsset[0] = drawQueen("#fff", "#000");
+    queenAsset[1] = drawQueen("#000", "#fff");
+    kingAsset[0] = drawKing("#fff", "#000");
+    kingAsset[1] = drawKing("#000", "#fff");
+    pawnAsset[0] = drawPawn("#fff", "#000");
+    pawnAsset[1] = drawPawn("#000", "#fff");
 }
 
 //rook
@@ -103,9 +128,6 @@ function drawRook(colour, outline) {
     return temp;
 }
 
-const blckRk = drawRook("#000", "#fff");
-const whtRk = drawRook("#fff", "#000");
-
 //knight
 function drawKnight(colour, outline) {
     const temp = createCanvas(grid, grid);
@@ -140,9 +162,6 @@ function drawKnight(colour, outline) {
     return temp;
 }
 
-const blckknght = drawKnight("#000", "#fff");
-const whtknght = drawKnight("#fff", "#000");
-
 //bishop
 function drawBishop(colour, outline) {
     const temp = createCanvas(grid, grid);
@@ -173,9 +192,6 @@ function drawBishop(colour, outline) {
     return temp;
 }
 
-const blckBshp = drawBishop("#000", "#fff");
-const whtBshp = drawBishop("#fff", "#000");
-
 //queen
 function drawQueen(colour, outline) {
     const temp = createCanvas(grid, grid);
@@ -195,9 +211,6 @@ function drawQueen(colour, outline) {
     fillshape(tmpCtx, colour, outline);
     return temp;
 }
-
-const blckqn = drawQueen("#000", "#fff");
-const whtqn = drawQueen("#fff", "#000");
 
 //king
 function drawKing(colour, outline) {
@@ -236,9 +249,6 @@ function drawKing(colour, outline) {
     return temp;
 }
 
-const blckKng = drawKing("#000", "#fff");
-const whtKng = drawKing("#fff", "#000");
-
 //pawn
 function drawPawn(colour, outline) {
     const temp = createCanvas(grid, grid);
@@ -254,9 +264,6 @@ function drawPawn(colour, outline) {
     fillshape(tmpCtx, colour, outline);
     return temp;
 }
-
-const blckPwn = drawPawn("#000", "#fff");
-const whtPwn = drawPawn("#fff", "#000");
 
 //classes
 class player {
@@ -373,26 +380,26 @@ function placePawns(p, c, a, f) {
 }
 
 //white player
-players[0].pieces.push(new rook(new coor(0, 7), whtRk));
-players[0].pieces.push(new rook(new coor(7, 7), whtRk));
-players[0].pieces.push(new knight(new coor(1, 7), whtknght));
-players[0].pieces.push(new knight(new coor(6, 7), whtknght));
-players[0].pieces.push(new bishop(new coor(2, 7), whtBshp));
-players[0].pieces.push(new bishop(new coor(5, 7), whtBshp));
-players[0].pieces.push(new queen(new coor(3, 7), whtqn));
-players[0].pieces.push(new king(new coor(4, 7), whtKng));
-placePawns(0, 6, whtPwn, -1);
+players[0].pieces.push(new rook(new coor(0, 7), rookAsset[0]));
+players[0].pieces.push(new rook(new coor(7, 7), rookAsset[0]));
+players[0].pieces.push(new knight(new coor(1, 7), knightAsset[0]));
+players[0].pieces.push(new knight(new coor(6, 7), knightAsset[0]));
+players[0].pieces.push(new bishop(new coor(2, 7), bishopAsset[0]));
+players[0].pieces.push(new bishop(new coor(5, 7), bishopAsset[0]));
+players[0].pieces.push(new queen(new coor(3, 7), queenAsset[0]));
+players[0].pieces.push(new king(new coor(4, 7), kingAsset[0]));
+placePawns(0, 6, pawnAsset[0], -1);
 
 //black player
-players[1].pieces.push(new rook(new coor(0, 0), blckRk));
-players[1].pieces.push(new rook(new coor(7, 0), blckRk));
-players[1].pieces.push(new knight(new coor(1, 0), blckknght));
-players[1].pieces.push(new knight(new coor(6, 0), blckknght));
-players[1].pieces.push(new bishop(new coor(2, 0), blckBshp));
-players[1].pieces.push(new bishop(new coor(5, 0), blckBshp));
-players[1].pieces.push(new queen(new coor(3, 0), blckqn));
-players[1].pieces.push(new king(new coor(4, 0), blckKng));
-placePawns(1, 1, blckPwn, 1);
+players[1].pieces.push(new rook(new coor(0, 0), rookAsset[1]));
+players[1].pieces.push(new rook(new coor(7, 0), rookAsset[1]));
+players[1].pieces.push(new knight(new coor(1, 0), knightAsset[1]));
+players[1].pieces.push(new knight(new coor(6, 0), knightAsset[1]));
+players[1].pieces.push(new bishop(new coor(2, 0), bishopAsset[1]));
+players[1].pieces.push(new bishop(new coor(5, 0), bishopAsset[1]));
+players[1].pieces.push(new queen(new coor(3, 0), queenAsset[1]));
+players[1].pieces.push(new king(new coor(4, 0), kingAsset[1]));
+placePawns(1, 1, pawnAsset[1], 1);
 
 drawGame();
 
@@ -433,12 +440,6 @@ function drawX(item) {
 }
 
 //misc functions
-function createCanvas(w, h) {
-    const temp = document.createElement("canvas");
-    temp.width = w;
-    temp.height = h;
-    return temp;
-}
 
 function findCoor(c, x, y) {
     return c.x == x && c.y == y;
@@ -487,11 +488,11 @@ document.querySelector("body").addEventListener("click", function (e) {
                 if (capturePiece != undefined) {
                     capturePiece.drawPiece();
                 }
-                beginAnimation = new Date();
-                xa = x;
-                ya = y;
-                window.requestAnimationFrame(movePiece);
-                clearMoveSet();
+                if (slct.name == "pawn" && (y == 0 || y == 7)) {
+                    promoteInfo(x, y);
+                } else {
+                    postAnimation(x, y);
+                }
                 return;
             }
         }
@@ -503,6 +504,33 @@ document.querySelector("body").addEventListener("click", function (e) {
         drawGame();
     }
 });
+
+function postAnimation(x, y) {
+    beginAnimation = new Date();
+    xa = x;
+    ya = y;
+    window.requestAnimationFrame(movePiece);
+    clearMoveSet();
+}
+
+function promotePawn(x, y) {
+    const select = document.getElementById("infoSelect").value;
+    switch (select) {
+        case "Queen":
+            promotion = new queen(new coor(x, y), queenAsset[turn % 2]);
+            break;
+        case "Knight":
+            promotion = new knight(new coor(x, y), knightAsset[turn % 2]);
+            break;
+        case "Rook":
+            promotion = new rook(new coor(x, y), rookAsset[turn % 2]);
+            break;
+        case "Bishop":
+            promotion = new bishop(new coor(x, y), bishopAsset[turn % 2]);
+        }
+        document.getElementById("dark").remove();
+        postAnimation(x, y);
+}
 
 document.querySelector("body").addEventListener("mousemove", function (e) {
     if (noAni) {
@@ -583,18 +611,33 @@ function movePiece() {
     ctx.drawImage(backup1, 0, 0);
     const now = new Date - beginAnimation;
     if (now < aniLength) {
+        const appearing = now / aniLength;
         if (capturePiece != undefined) {
-            ctx.save();
-            ctx.globalAlpha = (aniLength - now) / aniLength;
+            ctx.globalAlpha = 1 - appearing;
             capturePiece.drawPiece();
-            ctx.restore();
         }
         const xm = ((mirror(xa) * grid) - (mirror(slct.pos.x) * grid)) / aniLength;
         const ym = ((mirror(ya) * grid) - (mirror(slct.pos.y) * grid)) / aniLength;
+        if (promotion == undefined) {
+            ctx.globalAlpha = 1;
+        } else if (capturePiece == undefined) {
+            ctx.globalAlpha = 1 - appearing;
+        }
         ctx.drawImage(slct.asset, (mirror(slct.pos.x) * grid) + (xm * now), (mirror(slct.pos.y) * grid) + (ym * now));
+        if (promotion != undefined) {
+            ctx.globalAlpha = appearing;
+            ctx.drawImage(promotion.asset, (mirror(slct.pos.x) * grid) + (xm * now), (mirror(slct.pos.y) * grid) + (ym * now));
+        }
         window.requestAnimationFrame(movePiece);
     } else {
-        slct.pos = new coor(xa, ya);
+        if (promotion == undefined) {
+            slct.pos = new coor(xa, ya);
+        } else {
+            const temp = players[turn % 2].pieces.findIndex(i => findCoor(slct.pos, i.pos.x, i.pos.y));
+            players[turn % 2].pieces.splice(temp, 1);
+            players[turn % 2].pieces.push(promotion);
+            promotion = undefined;
+        }
         slct = undefined;
         drawGame();
         turn++;
@@ -624,4 +667,45 @@ function mirrorBoard() {
         ctx.drawImage(backup2, 0, 0);
         noAni = true;
     }
+}
+
+//templating
+function createInfo(content, onClicked) {
+    const info = document.createElement("div");
+    info.setAttribute("id", "info");
+    info.appendChild(content);
+    info.appendChild(createButton("Cancel", () => document.getElementById("dark").remove()));
+    info.appendChild(createButton("Ok", onClicked));
+    const mid = document.createElement("div");
+    mid.setAttribute("id", "mid");
+    mid.appendChild(info);
+    const dark = document.createElement("div");
+    dark.setAttribute("id", "dark");
+    dark.appendChild(mid);
+    return dark;
+}
+
+function promoteInfo(x, y) {
+    const temp = document.createElement("select");
+    temp.setAttribute("id", "infoSelect");
+    promotionOptions.forEach(function (item) {
+        temp.appendChild(new Option(item));
+    });
+    const temp2 = document.createElement("div");
+    temp2.appendChild(temp);
+    document.body.appendChild(createInfo(temp2, () => promotePawn(x, y)));
+}
+
+function createButton(text, onClicked) {
+    const button = document.createElement("button");
+    button.appendChild(document.createTextNode(text));
+    button.addEventListener("click", onClicked);
+    return button;
+}
+
+function createCanvas(w, h) {
+    const temp = document.createElement("canvas");
+    temp.width = w;
+    temp.height = h;
+    return temp;
 }
