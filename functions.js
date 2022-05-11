@@ -527,9 +527,9 @@ function promotePawn(x, y) {
             break;
         case "Bishop":
             promotion = new bishop(new coor(x, y), bishopAsset[turn % 2]);
-        }
-        document.getElementById("dark").remove();
-        postAnimation(x, y);
+    }
+    document.getElementById("dark").remove();
+    postAnimation(x, y);
 }
 
 document.querySelector("body").addEventListener("mousemove", function (e) {
@@ -644,7 +644,7 @@ function movePiece() {
         if (noRotate) {
             noAni = true;
         } else {
-            ctx2.drawImage(canvas, 0 ,0);
+            ctx2.drawImage(canvas, 0, 0);
             drawGame();
             ctx3.drawImage(canvas, 0, 0);
             ctx.drawImage(backup1, 0, 0);
