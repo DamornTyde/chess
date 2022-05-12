@@ -373,24 +373,27 @@ class coor {
 
 //build game
 
+buildPlayers();
+
 function buildPlayers() {
     while (players.length < 2) {
         const temp = new player(players.length == 0 ? "White" : "Black");
-        buildPieces(temp);
+        buildPieces(temp.pieces);
         players.push(temp);
     }
 }
 
 function buildPieces(temp) {
-    temp.pieces.push(new rook(new coor(0, 7 - 7 * players.length), rookAsset[players.length]));
-    temp.pieces.push(new rook(new coor(7, 7 - 7 * players.length), rookAsset[players.length]));
-    temp.pieces.push(new knight(new coor(1, 7 - 7 * players.length), knightAsset[players.length]));
-    temp.pieces.push(new knight(new coor(6, 7 - 7 * players.length), knightAsset[players.length]));
-    temp.pieces.push(new bishop(new coor(2, 7 - 7 * players.length), bishopAsset[players.length]));
-    temp.pieces.push(new bishop(new coor(5, 7 - 7 * players.length), bishopAsset[players.length]));
-    temp.pieces.push(new queen(new coor(3, 7 - 7 * players.length), queenAsset[players.length]));
-    temp.pieces.push(new king(new coor(4, 7 - 7 * players.length), kingAsset[players.length]));
-    placePawns(temp, 6 - 5 * players.length, pawnAsset[players.length], -1 + 2 * players.length);
+    const temp2 = players.length;
+    temp.push(new rook(new coor(0, 7 - 7 * temp2), rookAsset[temp2]));
+    temp.push(new rook(new coor(7, 7 - 7 * temp2), rookAsset[temp2]));
+    temp.push(new knight(new coor(1, 7 - 7 * temp2), knightAsset[temp2]));
+    temp.push(new knight(new coor(6, 7 - 7 * temp2), knightAsset[temp2]));
+    temp.push(new bishop(new coor(2, 7 - 7 * temp2), bishopAsset[temp2]));
+    temp.push(new bishop(new coor(5, 7 - 7 * temp2), bishopAsset[temp2]));
+    temp.push(new queen(new coor(3, 7 - 7 * temp2), queenAsset[temp2]));
+    temp.push(new king(new coor(4, 7 - 7 * temp2), kingAsset[temp2]));
+    placePawns(temp, 6 - 5 * temp2, pawnAsset[temp2], -1 + 2 * temp2);
 }
 
 function placePawns(p, c, a, f) {
