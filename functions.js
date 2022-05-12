@@ -387,16 +387,12 @@ function buildPlayers() {
         temp.pieces.push(new bishop(new coor(5, 7 - 7 * temp2), bishopAsset[temp2]));
         temp.pieces.push(new queen(new coor(3, 7 - 7 * temp2), queenAsset[temp2]));
         temp.pieces.push(new king(new coor(4, 7 - 7 * temp2), kingAsset[temp2]));
-        placePawns(temp.pieces, 6 - 5 * temp2, pawnAsset[temp2], -1 + 2 * temp2);
+        for (let x = 0; x < 8; x++) {
+            temp.pieces.push(new pawn(new coor(x, 6 - 5 * temp2), pawnAsset[temp2], -1 + 2 * temp2));
+        }
         players.push(temp);
     }
     drawGame();
-}
-
-function placePawns(p, c, a, f) {
-    for (let x = 0; x < 8; x++) {
-        p.push(new pawn(new coor(x, c), a, f));
-    }
 }
 
 //draw game
