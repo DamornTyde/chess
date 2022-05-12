@@ -11,9 +11,8 @@ const bishopAsset = [];
 const queenAsset = [];
 const kingAsset = [];
 const pawnAsset = [];
-const promotionOptions = ["Queen", "Knight", "Rook", "Bishop"];
-const players = [];
 
+let players = [];
 let grid = 100;
 let turn = 0;
 let slct;
@@ -376,11 +375,13 @@ class coor {
 buildPlayers();
 
 function buildPlayers() {
+    players = [];
     while (players.length < 2) {
         const temp = new player(players.length == 0 ? "White" : "Black");
         buildPieces(temp.pieces);
         players.push(temp);
     }
+    drawGame();
 }
 
 function buildPieces(temp) {
@@ -401,8 +402,6 @@ function placePawns(p, c, a, f) {
         p.push(new pawn(new coor(x, c), a, f));
     }
 }
-
-drawGame();
 
 //draw game
 function drawGame() {
@@ -687,6 +686,7 @@ function createInfo(content, onClicked) {
 }
 
 function promoteInfo(x, y) {
+    const promotionOptions = ["Queen", "Knight", "Rook", "Bishop"];
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
     promotionOptions.forEach(function (item) {
