@@ -375,6 +375,7 @@ buildPlayers();
 
 function buildPlayers() {
     players = [];
+    turn = 0;
     while (players.length < 2) {
         const temp2 = players.length;
         const temp = new player(temp2 == 0 ? "White" : "Black");
@@ -393,6 +394,8 @@ function buildPlayers() {
     }
     drawGame();
 }
+
+document.getElementById("menu").append(createButton("Reset", () => buildPlayers()));
 
 //draw game
 function drawGame() {
