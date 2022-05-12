@@ -12,6 +12,7 @@ const queenAsset = [];
 const kingAsset = [];
 const pawnAsset = [];
 const promotionOptions = ["Queen", "Knight", "Rook", "Bishop"];
+const players = [];
 
 let grid = 100;
 let turn = 0;
@@ -371,35 +372,32 @@ class coor {
 }
 
 //build game
-const players = [new player("White"), new player("Black")];
 
-function placePawns(p, c, a, f) {
-    for (let x = 0; x < 8; x++) {
-        players[p].pieces.push(new pawn(new coor(x, c), a, f));
+function buildPlayers() {
+    while (players.length < 2) {
+        const temp = new player(players.length == 0 ? "White" : "Black");
+        buildPieces(temp);
+        players.push(temp);
     }
 }
 
-//white player
-players[0].pieces.push(new rook(new coor(0, 7), rookAsset[0]));
-players[0].pieces.push(new rook(new coor(7, 7), rookAsset[0]));
-players[0].pieces.push(new knight(new coor(1, 7), knightAsset[0]));
-players[0].pieces.push(new knight(new coor(6, 7), knightAsset[0]));
-players[0].pieces.push(new bishop(new coor(2, 7), bishopAsset[0]));
-players[0].pieces.push(new bishop(new coor(5, 7), bishopAsset[0]));
-players[0].pieces.push(new queen(new coor(3, 7), queenAsset[0]));
-players[0].pieces.push(new king(new coor(4, 7), kingAsset[0]));
-placePawns(0, 6, pawnAsset[0], -1);
+function buildPieces(temp) {
+    temp.pieces.push(new rook(new coor(0, 7 - 7 * players.length), rookAsset[players.length]));
+    temp.pieces.push(new rook(new coor(7, 7 - 7 * players.length), rookAsset[players.length]));
+    temp.pieces.push(new knight(new coor(1, 7 - 7 * players.length), knightAsset[players.length]));
+    temp.pieces.push(new knight(new coor(6, 7 - 7 * players.length), knightAsset[players.length]));
+    temp.pieces.push(new bishop(new coor(2, 7 - 7 * players.length), bishopAsset[players.length]));
+    temp.pieces.push(new bishop(new coor(5, 7 - 7 * players.length), bishopAsset[players.length]));
+    temp.pieces.push(new queen(new coor(3, 7 - 7 * players.length), queenAsset[players.length]));
+    temp.pieces.push(new king(new coor(4, 7 - 7 * players.length), kingAsset[players.length]));
+    placePawns(temp, 6 - 5 * players.length, pawnAsset[players.length], -1 + 2 * players.length);
+}
 
-//black player
-players[1].pieces.push(new rook(new coor(0, 0), rookAsset[1]));
-players[1].pieces.push(new rook(new coor(7, 0), rookAsset[1]));
-players[1].pieces.push(new knight(new coor(1, 0), knightAsset[1]));
-players[1].pieces.push(new knight(new coor(6, 0), knightAsset[1]));
-players[1].pieces.push(new bishop(new coor(2, 0), bishopAsset[1]));
-players[1].pieces.push(new bishop(new coor(5, 0), bishopAsset[1]));
-players[1].pieces.push(new queen(new coor(3, 0), queenAsset[1]));
-players[1].pieces.push(new king(new coor(4, 0), kingAsset[1]));
-placePawns(1, 1, pawnAsset[1], 1);
+function placePawns(p, c, a, f) {
+    for (let x = 0; x < 8; x++) {
+        p.pieces.push(new pawn(new coor(x, c), a, f));
+    }
+}
 
 drawGame();
 
