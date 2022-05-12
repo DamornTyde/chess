@@ -371,7 +371,6 @@ class coor {
 }
 
 //build game
-
 buildPlayers();
 
 function buildPlayers() {
