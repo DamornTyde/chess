@@ -63,7 +63,7 @@ function fillshape(tmpCtx, colour, outline) {
     tmpCtx.stroke();
     tmpCtx.fillStyle = colour;
     tmpCtx.fill();
-    tmpCtx.lineWidth = 1;
+    tmpCtx.lineWidth = scalePoint(1);
 }
 
 function drawAssets() {
