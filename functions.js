@@ -398,7 +398,7 @@ function buildPieces(temp) {
 
 function placePawns(p, c, a, f) {
     for (let x = 0; x < 8; x++) {
-        p.pieces.push(new pawn(new coor(x, c), a, f));
+        p.push(new pawn(new coor(x, c), a, f));
     }
 }
 
