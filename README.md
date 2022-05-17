@@ -1,2 +1,2 @@
 # chess
- My take on an old tbstrg (wip)
+ My take on an old tbsg (wip)
