@@ -1,7 +1,7 @@
 "use strict"
-const noRotate = !confirm("Do you want the board to be rotated after every turn?");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const menu = document.getElementById("menu");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
 const aniLength = 750;
@@ -24,6 +24,7 @@ let beginAnimation;
 let xa;
 let ya;
 let capturePiece;
+let noRotate = true;
 let noAni = true;
 let promotion = undefined;
 
@@ -395,7 +396,8 @@ function buildPlayers() {
     drawGame();
 }
 
-document.getElementById("menu").append(createButton("Reset", () => buildPlayers()));
+menu.appendChild(createButton("Reset", () => buildPlayers()));
+menu.appendChild(createSwitch("Rotation", "rotation", () => rotation()));
 
 //draw game
 function drawGame() {
@@ -444,6 +446,11 @@ function mirror(i) {
         return i;
     }
     return 7 - i;
+}
+
+function rotation() {
+    noRotate = !document.getElementById("rotation").checked;
+    drawGame();
 }
 
 //input
@@ -702,5 +709,25 @@ function createCanvas(w, h) {
     const temp = document.createElement("canvas");
     temp.width = w;
     temp.height = h;
+    return temp;
+}
+
+function createSwitch(text, id, onClicked) {
+    const temp = document.createElement("div");
+    const b = document.createElement("p");
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    const span = document.createElement("span");
+    temp.setAttribute("class", "switchDiv");
+    b.appendChild(document.createTextNode(text + ":"));
+    input.setAttribute("type", "checkbox");
+    input.setAttribute("id", id);
+    input.addEventListener("change", onClicked);
+    span.setAttribute("class", "slider");
+    label.setAttribute("class", "switch");
+    label.appendChild(input);
+    label.appendChild(span);
+    temp.appendChild(b);
+    temp.appendChild(label);
     return temp;
 }
