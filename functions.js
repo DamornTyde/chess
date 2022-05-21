@@ -34,21 +34,9 @@ const backup1 = createCanvas(canvas.width, canvas.width);
 const ctx2 = backup1.getContext("2d");
 const backup2 = createCanvas(canvas.width, canvas.width);
 const ctx3 = backup2.getContext("2d");
-
-//draw board
 const board = createCanvas(canvas.width, canvas.width);
-const brdCtx = board.getContext("2d");
 
-brdCtx.fillStyle = "#200";
-brdCtx.fillRect(0, 0, canvas.width, canvas.width);
-brdCtx.fillStyle = "#800";
-for (let x = 0; x < 8; x++) {
-    for (let y = x % 2; y < 8; y += 2) {
-        brdCtx.fillRect(x * grid, y * grid, grid, grid);
-    }
-}
-
-//draw pieces
+//draw assets
 drawAssets();
 
 function scalePoint(i) {
@@ -68,6 +56,15 @@ function fillshape(tmpCtx, colour, outline) {
 }
 
 function drawAssets() {
+    const brdCtx = board.getContext("2d");
+    brdCtx.fillStyle = "#200";
+    brdCtx.fillRect(0, 0, canvas.width, canvas.width);
+    brdCtx.fillStyle = "#800";
+    for (let x = 0; x < 8; x++) {
+        for (let y = x % 2; y < 8; y += 2) {
+            brdCtx.fillRect(x * grid, y * grid, grid, grid);
+        }
+    }
     rookAsset[0] = drawRook("#fff", "#000");
     rookAsset[1] = drawRook("#000", "#fff");
     knightAsset[0] = drawKnight("#fff", "#000");
@@ -82,7 +79,6 @@ function drawAssets() {
     pawnAsset[1] = drawPawn("#000", "#fff");
 }
 
-//rook
 function drawRook(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -129,7 +125,6 @@ function drawRook(colour, outline) {
     return temp;
 }
 
-//knight
 function drawKnight(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -163,7 +158,6 @@ function drawKnight(colour, outline) {
     return temp;
 }
 
-//bishop
 function drawBishop(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -193,7 +187,6 @@ function drawBishop(colour, outline) {
     return temp;
 }
 
-//queen
 function drawQueen(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -213,7 +206,6 @@ function drawQueen(colour, outline) {
     return temp;
 }
 
-//king
 function drawKing(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -250,7 +242,6 @@ function drawKing(colour, outline) {
     return temp;
 }
 
-//pawn
 function drawPawn(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
@@ -397,7 +388,7 @@ function buildPlayers() {
 }
 
 menu.appendChild(createButton("Reset", () => buildPlayers()));
-menu.appendChild(createSwitch("Rotation", "rotation", () => rotation()));
+menu.appendChild(createSwitch("Board rotation", "rotation", () => rotation()));
 
 //draw game
 function drawGame() {
@@ -624,10 +615,10 @@ function movePiece() {
         } else if (capturePiece == undefined) {
             ctx.globalAlpha = 1 - appearing;
         }
-        ctx.drawImage(slct.asset, (mirror(slct.pos.x) * grid) + (xm * now), (mirror(slct.pos.y) * grid) + (ym * now));
+        ctx.drawImage(slct.asset, movement(slct.pos.x, xm, now), movement(slct.pos.y, ym, now));
         if (promotion != undefined) {
             ctx.globalAlpha = appearing;
-            ctx.drawImage(promotion.asset, (mirror(slct.pos.x) * grid) + (xm * now), (mirror(slct.pos.y) * grid) + (ym * now));
+            ctx.drawImage(promotion.asset, movement(slct.pos.x, xm, now), movement(slct.pos.y, ym, now));
         }
         window.requestAnimationFrame(movePiece);
     } else {
@@ -653,6 +644,10 @@ function movePiece() {
             window.requestAnimationFrame(mirrorBoard);
         }
     }
+}
+
+function movement(l, m, t) {
+    return mirror(l) * grid + m * t;
 }
 
 function mirrorBoard() {
@@ -713,21 +708,23 @@ function createCanvas(w, h) {
 }
 
 function createSwitch(text, id, onClicked) {
-    const temp = document.createElement("div");
-    const b = document.createElement("p");
-    const label = document.createElement("label");
+    const p = document.createElement("p");
+    p.appendChild(document.createTextNode(text + ":"));
     const input = document.createElement("input");
-    const span = document.createElement("span");
-    temp.setAttribute("class", "switchDiv");
-    b.appendChild(document.createTextNode(text + ":"));
     input.setAttribute("type", "checkbox");
     input.setAttribute("id", id);
-    input.addEventListener("change", onClicked);
+    if (onClicked != undefined) {
+        input.addEventListener("change", onClicked);
+    }
+    const span = document.createElement("span");
     span.setAttribute("class", "slider");
+    const label = document.createElement("label");
     label.setAttribute("class", "switch");
     label.appendChild(input);
     label.appendChild(span);
-    temp.appendChild(b);
-    temp.appendChild(label);
-    return temp;
+    const div = document.createElement("div");
+    div.setAttribute("class", "switchDiv");
+    div.appendChild(p);
+    div.appendChild(label);
+    return div;
 }

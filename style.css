@@ -66,6 +66,7 @@ body {
 .switchDiv > * {
     align-self: center;
     margin: 0px 5px;
+    border-radius: 6px;
 }
 
 .switchDiv > p {
