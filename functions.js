@@ -30,11 +30,11 @@ let promotion = undefined;
 
 canvas.width = grid * 8;
 canvas.height = canvas.width;
-const backup1 = createCanvas(canvas.width, canvas.width);
-const ctx2 = backup1.getContext("2d");
-const backup2 = createCanvas(canvas.width, canvas.width);
-const ctx3 = backup2.getContext("2d");
-const board = createCanvas(canvas.width, canvas.width);
+let backup1;
+let ctx2;
+let backup2;
+let ctx3;
+let board;
 
 //draw assets
 drawAssets();
@@ -56,6 +56,11 @@ function fillshape(tmpCtx, colour, outline) {
 }
 
 function drawAssets() {
+    backup1 = createCanvas(canvas.width, canvas.width);
+    ctx2 = backup1.getContext("2d");
+    backup2 = createCanvas(canvas.width, canvas.width);
+    ctx3 = backup2.getContext("2d");
+    board = createCanvas(canvas.width, canvas.width);
     const brdCtx = board.getContext("2d");
     brdCtx.fillStyle = "#200";
     brdCtx.fillRect(0, 0, canvas.width, canvas.width);
