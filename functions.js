@@ -11,9 +11,11 @@ const bishopAsset = [];
 const queenAsset = [];
 const kingAsset = [];
 const pawnAsset = [];
+const body = document.body;
+const html = document.documentElement;
 
 let players = [];
-let grid = 100;
+let grid;
 let turn = 0;
 let slct;
 let msPlc;
@@ -26,18 +28,65 @@ let ya;
 let capturePiece;
 let noRotate = true;
 let noAni = true;
-let promotion = undefined;
-
-canvas.width = grid * 8;
-canvas.height = canvas.width;
+let promotion;
 let backup1;
 let ctx2;
 let backup2;
 let ctx3;
 let board;
 
+//autoplay
+window.onload = function() {
+    scaling();
+    drawAssets();
+    buildPlayers();
+};
+
+menu.appendChild(createButton("Reset", () => buildPlayers()));
+menu.appendChild(createSwitch("Board rotation", "rotation", () => rotation()));
+
+//scaling
+function scaling() {
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+    const test = Math.min(vw - 60, vh - 80);
+    grid = test / 8;
+    canvas.width = grid * 8;
+    canvas.height = canvas.width;
+}
+
+window.onresize = rescaling;
+
+function rescaling() {
+    scaling();
+    drawAssets();
+    players.forEach(function (item, i) {
+        item.pieces.forEach(function (item2) {
+            switch (item2.name) {
+                case "king":
+                    item2.asset = kingAsset[i];
+                    break;
+                case "queen":
+                    item2.asset = queenAsset[i];
+                    break;
+                case "rook":
+                    item2.asset = rookAsset[i];
+                    break;
+                case "knight":
+                    item2.asset = knightAsset[i];
+                    break;
+                case "bishop":
+                    item2.asset = bishopAsset[i];
+                    break;
+                case "pawn":
+                    item2.asset = pawnAsset[i];
+            }
+        });
+    });
+    drawGame();
+}
+
 //draw assets
-drawAssets();
 
 function scalePoint(i) {
     return i * (grid / 100);
@@ -368,8 +417,6 @@ class coor {
 }
 
 //build game
-buildPlayers();
-
 function buildPlayers() {
     players = [];
     turn = 0;
@@ -391,9 +438,6 @@ function buildPlayers() {
     }
     drawGame();
 }
-
-menu.appendChild(createButton("Reset", () => buildPlayers()));
-menu.appendChild(createSwitch("Board rotation", "rotation", () => rotation()));
 
 //draw game
 function drawGame() {
