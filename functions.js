@@ -4,7 +4,6 @@ const ctx = canvas.getContext("2d");
 const menu = document.getElementById("menu");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
-const aniLength = 750;
 const rookAsset = [];
 const knightAsset = [];
 const bishopAsset = [];
@@ -20,37 +19,22 @@ let turn = 0;
 let slct;
 let msPlc;
 let moveTile = [];
-let captureTile = [];
-let enPassantTile = [];
-let beginAnimation;
-let xa;
-let ya;
-let capturePiece;
-let noRotate = true;
-let noAni = true;
-let promotion;
-let backup1;
-let ctx2;
-let backup2;
-let ctx3;
 let board;
 
 //autoplay
-window.onload = function() {
+window.onload = function () {
     scaling();
     drawAssets();
     buildPlayers();
 };
 
 menu.appendChild(createButton("Reset", () => buildPlayers()));
-menu.appendChild(createSwitch("Board rotation", "rotation", () => rotation()));
 
 //scaling
 function scaling() {
     const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
     const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-    const test = Math.min(vw - 60, vh - 80);
-    grid = test / 8;
+    grid = Math.min(vw - 60, vh - 70) / 8;
     canvas.width = grid * 8;
     canvas.height = canvas.width;
 }
@@ -87,7 +71,6 @@ function rescaling() {
 }
 
 //draw assets
-
 function scalePoint(i) {
     return i * (grid / 100);
 }
@@ -105,10 +88,6 @@ function fillshape(tmpCtx, colour, outline) {
 }
 
 function drawAssets() {
-    backup1 = createCanvas(canvas.width, canvas.width);
-    ctx2 = backup1.getContext("2d");
-    backup2 = createCanvas(canvas.width, canvas.width);
-    ctx3 = backup2.getContext("2d");
     board = createCanvas(canvas.width, canvas.width);
     const brdCtx = board.getContext("2d");
     brdCtx.fillStyle = "#200";
@@ -324,9 +303,10 @@ class piece {
         this.name = name;
         this.pos = pos;
         this.asset = asset;
+        this.start = true;
     }
     drawPiece() {
-        ctx.drawImage(this.asset, mirror(this.pos.x) * grid, mirror(this.pos.y) * grid);
+        ctx.drawImage(this.asset, this.pos.x * grid, this.pos.y * grid);
     }
 }
 
@@ -334,8 +314,24 @@ class king extends piece {
     constructor(pos, asset) {
         super("king", pos, asset);
     }
-    move() {
-        royalCheck(this.pos.x, this.pos.y, 0, false);
+    move(check) {
+        let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, false));
+        if (check) {
+            const temp2 = [];
+            players[whosTurn(true)].pieces.forEach(function (item) {
+                temp2.push(item.move(false));
+            });
+            const temp3 = straightLiners(true);
+            for (let i = 0; i < temp3.length; i++) {
+                if (includesCoor(this.pos, temp3[i].move(false), true)) {
+                    const temp4 = posCheck(this.pos, temp3[i].pos);
+                    temp2.push(new coor(this.pos.x - temp4.x, this.pos.y - temp4.y));
+                }
+            }
+            temp = coorFilter(temp, flatten(temp2), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+        }
+        return temp;
     }
 }
 
@@ -343,8 +339,13 @@ class queen extends piece {
     constructor(pos, asset) {
         super("queen", pos, asset);
     }
-    move() {
-        royalCheck(this.pos.x, this.pos.y, 0, true);
+    move(check) {
+        let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, true));
+        if (check) {
+            temp = kingCheck(temp, this.pos);
+            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+        }
+        return temp;
     }
 }
 
@@ -352,11 +353,18 @@ class rook extends piece {
     constructor(pos, asset) {
         super("rook", pos, asset);
     }
-    move() {
+    move(check) {
+        let temp = [];
         for (let i = -1; i < 2; i += 2) {
-            lineCheck(this.pos.x, this.pos.y, i, 0);
-            lineCheck(this.pos.x, this.pos.y, 0, i);
+            temp.push(lineCheck(this.pos.x, this.pos.y, i, 0));
+            temp.push(lineCheck(this.pos.x, this.pos.y, 0, i));
         }
+        temp = flatten(temp);
+        if (check) {
+            temp = kingCheck(temp, this.pos);
+            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+        }
+        return temp;
     }
 }
 
@@ -364,12 +372,19 @@ class bishop extends piece {
     constructor(pos, asset) {
         super("bishop", pos, asset);
     }
-    move() {
+    move(check) {
+        let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -1; i2 < 2; i2 += 2) {
-                lineCheck(this.pos.x, this.pos.y, i, i2);
+                temp.push(lineCheck(this.pos.x, this.pos.y, i, i2));
             }
         }
+        temp = flatten(temp);
+        if (check) {
+            temp = kingCheck(temp, this.pos);
+            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+        }
+        return temp;
     }
 }
 
@@ -377,13 +392,23 @@ class knight extends piece {
     constructor(pos, asset) {
         super("knight", pos, asset);
     }
-    move() {
+    move(check) {
+        let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -2; i2 < 3; i2 += 4) {
-                tileCheck(this.pos.x + i, this.pos.y + i2);
-                tileCheck(this.pos.x + i2, this.pos.y + i);
+                if (coorCheck(this.pos.x + i, this.pos.y + i2)) {
+                    temp.push(new coor(this.pos.x + i, this.pos.y + i2));
+                }
+                if (coorCheck(this.pos.x + i2, this.pos.y + i)) {
+                    temp.push(new coor(this.pos.x + i2, this.pos.y + i));
+                }
             }
         }
+        if (check) {
+            temp = kingCheck(temp, this.pos);
+            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+        }
+        return temp;
     }
 }
 
@@ -393,19 +418,44 @@ class pawn extends piece {
         this.frwrd = frwrd;
         this.enPassant = -1;
     }
-    move() {
-        if (freeTile(this.pos.x, this.pos.y + this.frwrd) && (this.pos.y - this.frwrd == 0 || this.pos.y - this.frwrd == 7)) {
-            freeTile(this.pos.x, this.pos.y + (this.frwrd * 2));
-        }
-        for (let i = -1; i < 2; i += 2) {
-            if (players[(turn + 1) % 2].pieces.findIndex(item => findCoor(item.pos, this.pos.x + i, this.pos.y + this.frwrd)) > -1) {
-                captureTile.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
+    move(check) {
+        let temp;
+        if (check) {
+            temp = [
+                [],
+                []
+            ];
+            let temp2 = getPiecesPos(-1);
+            let temp3 = new coor(this.pos.x, this.pos.y + this.frwrd);
+            if (includesCoor(temp3, temp2, false)) {
+                temp[0].push(temp3);
+                temp3 = new coor(this.pos.x, this.pos.y + this.frwrd * 2)
+                if (this.start && includesCoor(temp3, temp2, false)) {
+                    temp[0].push(temp3);
+                }
             }
-            let temp = players[(turn + 1) % 2].pieces.find(item => findCoor(item.pos, this.pos.x + i, this.pos.y));
-            if (temp != undefined && temp.name == "pawn" && temp.enPassant == turn) {
-                enPassantTile.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
+            temp2 = getPiecesPos(whosTurn(true));
+            for (let i = -1; i < 2; i += 2) {
+                temp3 = new coor(this.pos.x + i, this.pos.y + this.frwrd);
+                if (includesCoor(temp3, temp2, true)) {
+                    temp[1].push(temp3);
+                } else {
+                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, this.pos.y));
+                    if (temp4 != undefined && temp4.name == "pawn" && temp4.enPassant == turn) {
+                        temp[1].push(temp3);
+                    }
+                }
+            }
+            for (let i = 0; i < temp.length; i++) {
+                temp[i] = kingCheck(temp[i], this.pos);
+            }
+        } else {
+            temp = [];
+            for (let i = -1; i < 2; i += 2) {
+                temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
             }
         }
+        return temp;
     }
 }
 
@@ -418,21 +468,21 @@ class coor {
 
 //build game
 function buildPlayers() {
+    clearMoveSet();
     players = [];
     turn = 0;
-    while (players.length < 2) {
-        const temp2 = players.length;
-        const temp = new player(temp2 == 0 ? "White" : "Black");
-        temp.pieces.push(new rook(new coor(0, 7 - 7 * temp2), rookAsset[temp2]));
-        temp.pieces.push(new rook(new coor(7, 7 - 7 * temp2), rookAsset[temp2]));
-        temp.pieces.push(new knight(new coor(1, 7 - 7 * temp2), knightAsset[temp2]));
-        temp.pieces.push(new knight(new coor(6, 7 - 7 * temp2), knightAsset[temp2]));
-        temp.pieces.push(new bishop(new coor(2, 7 - 7 * temp2), bishopAsset[temp2]));
-        temp.pieces.push(new bishop(new coor(5, 7 - 7 * temp2), bishopAsset[temp2]));
-        temp.pieces.push(new queen(new coor(3, 7 - 7 * temp2), queenAsset[temp2]));
-        temp.pieces.push(new king(new coor(4, 7 - 7 * temp2), kingAsset[temp2]));
+    const playerNames = ["White", "Black"];
+    for (let i = 0; i < 2; i++) {
+        const temp = new player(playerNames[i]);
+        for (let i2 = 0; i2 < 2; i2++) {
+            temp.pieces.push(new rook(new coor(0 + 7 * i2, 7 - 7 * i), rookAsset[i]));
+            temp.pieces.push(new knight(new coor(1 + 5 * i2, 7 - 7 * i), knightAsset[i]));
+            temp.pieces.push(new bishop(new coor(2 + 3 * i2, 7 - 7 * i), bishopAsset[i]));
+        }
+        temp.pieces.push(new queen(new coor(3, 7 - 7 * i), queenAsset[i]));
+        temp.pieces.push(new king(new coor(4, 7 - 7 * i), kingAsset[i]));
         for (let x = 0; x < 8; x++) {
-            temp.pieces.push(new pawn(new coor(x, 6 - 5 * temp2), pawnAsset[temp2], -1 + 2 * temp2));
+            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), pawnAsset[i], -1 + 2 * i));
         }
         players.push(temp);
     }
@@ -444,274 +494,328 @@ function drawGame() {
     ctx.drawImage(board, 0, 0);
     if (msPlc != undefined) {
         ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
-        ctx.fillRect(mirror(msPlc.x) * grid, mirror(msPlc.y) * grid, grid, grid);
+        ctx.fillRect(msPlc.x * grid, msPlc.y * grid, grid, grid);
     }
-    ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
     if (slct != undefined) {
-        ctx.fillRect(mirror(slct.pos.x) * grid, mirror(slct.pos.y) * grid, grid, grid);
+        ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
     }
-    moveTile.forEach(function (item) {
-        ctx.beginPath();
-        ctx.arc((mirror(item.x) * grid) + (grid / 2), (mirror(item.y) * grid) + (grid / 2), grid * 0.25, 0, 2 * Math.PI);
-        ctx.fill();
-    })
     players.forEach(function (item) {
         item.pieces.forEach(function (item2) {
             item2.drawPiece();
         });
     });
-    ctx.beginPath();
-    captureTile.forEach(drawX);
-    enPassantTile.forEach(drawX);
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
+    const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
-    ctx.stroke();
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
+    if (slct != undefined && slct.name != "pawn") {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+        moveTile.forEach(function (item) {
+            drawOption(item, temp);
+        })
+        ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
+        ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+        falseMoves(moveTile, temp, false);
+    } else {
+        moveTile.forEach(function (temp2, i) {
+            ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+            ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
+            temp2.forEach(function (item) {
+                if (i == 0) {
+                    drawArc(item);
+                } else {
+                    drawX(item);
+                }
+            });
+            ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+            if (i == 0) {
+                const item = new coor(slct.pos.x, slct.pos.y + slct.frwrd);
+                if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
+                    drawArc(item);
+                }
+            } else {
+                falseMoves(temp2, temp, true);
+            }
+        });
+    }
+}
+
+function drawArc(item) {
+    ctx.beginPath();
+    ctx.arc((item.x * grid) + (grid / 2), (item.y * grid) + (grid / 2), grid * 0.25, 0, 2 * Math.PI);
+    ctx.fill();
 }
 
 function drawX(item) {
-    ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.1));
-    ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.9));
-    ctx.moveTo((mirror(item.x) * grid) + (grid * 0.1), (mirror(item.y) * grid) + (grid * 0.9));
-    ctx.lineTo((mirror(item.x) * grid) + (grid * 0.9), (mirror(item.y) * grid) + (grid * 0.1));
+    ctx.beginPath();
+    ctx.moveTo((item.x * grid) + (grid * 0.1), (item.y * grid) + (grid * 0.1));
+    ctx.lineTo((item.x * grid) + (grid * 0.9), (item.y * grid) + (grid * 0.9));
+    ctx.moveTo((item.x * grid) + (grid * 0.1), (item.y * grid) + (grid * 0.9));
+    ctx.lineTo((item.x * grid) + (grid * 0.9), (item.y * grid) + (grid * 0.1));
+    ctx.stroke();
 }
 
-//misc functions
-
-function findCoor(c, x, y) {
-    return c.x == x && c.y == y;
+function falseMoves(temp2, temp, opp) {
+    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(function (item) {
+        drawOption(item, temp);
+    });
 }
 
-function mirror(i) {
-    if (noRotate || turn % 2 == 0) {
-        return i;
+function drawOption(item, temp) {
+    if (includesCoor(item, temp, false)) {
+        drawArc(item);
+    } else {
+        drawX(item);
     }
-    return 7 - i;
-}
-
-function rotation() {
-    noRotate = !document.getElementById("rotation").checked;
-    drawGame();
 }
 
 //input
-document.querySelector("body").addEventListener("click", function (e) {
-    if (noAni) {
-        const y = mirror(Math.floor((e.clientY - canvasy) / grid));
-        const x = mirror(Math.floor((e.clientX - canvasx) / grid));
-        if (slct != undefined && players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) == -1) {
-            if (moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1 || enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
-                noAni = false;
-                msPlc = undefined;
-                let capture;
-                if (enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
-                    capture = players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y - slct.frwrd));
-                } else {
-                    capture = players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y));
-                }
-                if (capture > -1) {
-                    capturePiece = players[(turn + 1) % 2].pieces.splice(capture, 1)[0];
-                } else {
-                    capturePiece = undefined;
-                    if (slct.name == "pawn" && moveTile.findIndex(c => findCoor(c, x, y)) == 1) {
-                        slct.enPassant = turn + 1;
-                    }
-                }
-                ctx.drawImage(board, 0, 0);
-                players.forEach(function (item) {
-                    item.pieces.forEach(function (item2) {
-                        if (!findCoor(item2.pos, slct.pos.x, slct.pos.y)) {
-                            item2.drawPiece();
-                        }
-                    });
-                });
-                ctx2.drawImage(canvas, 0, 0);
-                slct.drawPiece();
-                if (capturePiece != undefined) {
-                    capturePiece.drawPiece();
-                }
-                if (slct.name == "pawn" && (y == 0 || y == 7)) {
-                    promoteInfo(x, y);
-                } else {
-                    postAnimation(x, y);
-                }
-                return;
+document.getElementById("game").addEventListener("click", function (e) {
+    const temp = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
+    if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
+        slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
+        moveTile = slct.move(true);
+    } else if (slct != undefined && includesCoor(temp, flatten(moveTile), true)) {
+        if (slct.name == "pawn") {
+            if (moveTile[0].length == 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
+                slct.enPassant = turn + 1;
+            } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(true)), false)) {
+                const temp3 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y - slct.frwrd));
+                players[whosTurn(true)].pieces.splice(temp3, 1);
             }
         }
-        clearMoveSet();
-        slct = players[turn % 2].pieces.find(i => findCoor(i.pos, x, y));
-        if (slct != undefined) {
-            slct.move();
+        if (includesCoor(temp, getPiecesPos(whosTurn(true)), true)) {
+            const temp2 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y));
+            players[whosTurn(true)].pieces.splice(temp2, 1);
         }
-        drawGame();
+        if (slct.name == "pawn" && temp.y == 0 || temp.y == 7) {
+            const temp4 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
+            players[whosTurn(false)].pieces.splice(temp4, 1);
+            promoteInfo(temp.x, temp.y);
+            return;
+        }
+        slct.pos = temp;
+        if (slct.start) {
+            slct.start = false;
+        }
+        endTurn();
+    } else {
+        clearMoveSet();
     }
+    drawGame();
 });
 
-function postAnimation(x, y) {
-    beginAnimation = new Date();
-    xa = x;
-    ya = y;
-    window.requestAnimationFrame(movePiece);
+function endTurn() {
+    turn++;
     clearMoveSet();
+    const temp = [];
+    players[whosTurn(false)].pieces.forEach(function (item) {
+        temp.push(item.move(true));
+    });
+    if (kingThreat.length < 1) {
+        if (flatten(temp).length < 1) {
+            createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
+        }
+    } else {
+        if (flatten(temp).length < 1) {
+            createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
+        } else {
+            createGameInfo(`Check`);
+        }
+    }
 }
 
 function promotePawn(x, y) {
-    const select = document.getElementById("infoSelect").value;
-    switch (select) {
+    let temp;
+    switch (document.getElementById("infoSelect").value) {
         case "Queen":
-            promotion = new queen(new coor(x, y), queenAsset[turn % 2]);
+            temp = new queen(new coor(x, y), queenAsset[whosTurn(false)]);
             break;
         case "Knight":
-            promotion = new knight(new coor(x, y), knightAsset[turn % 2]);
+            temp = new knight(new coor(x, y), knightAsset[whosTurn(false)]);
             break;
         case "Rook":
-            promotion = new rook(new coor(x, y), rookAsset[turn % 2]);
+            temp = new rook(new coor(x, y), rookAsset[whosTurn(false)]);
             break;
         case "Bishop":
-            promotion = new bishop(new coor(x, y), bishopAsset[turn % 2]);
+            temp = new bishop(new coor(x, y), bishopAsset[whosTurn(false)]);
     }
+    temp.start = false;
+    players[whosTurn(false)].pieces.push(temp);
     document.getElementById("dark").remove();
-    postAnimation(x, y);
+    endTurn();
+    drawGame();
 }
 
-document.querySelector("body").addEventListener("mousemove", function (e) {
-    if (noAni) {
-        const y = mirror(Math.floor((e.clientY - canvasy) / grid));
-        const x = mirror(Math.floor((e.clientX - canvasx) / grid));
-        if (players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) > -1 || moveTile.findIndex(i => findCoor(i, x, y)) > -1 || captureTile.findIndex(i => findCoor(i, x, y)) > -1 || enPassantTile.findIndex(i => findCoor(i, x, y)) > -1) {
-            msPlc = new coor(x, y);
-        } else {
-            msPlc = undefined;
-        }
-        drawGame();
+document.getElementById("game").addEventListener("mousemove", function (e) {
+    const item = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
+    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, flatten(moveTile), true)) {
+        msPlc = item;
+    } else {
+        msPlc = undefined;
     }
+    drawGame();
 });
 
 function clearMoveSet() {
+    slct = undefined;
+    msPlc = undefined;
     moveTile = [];
-    captureTile = [];
-    enPassantTile = [];
 }
 
 //move checks
-function freeTile(x, y) {
-    if (y < 8 && y > -1 && noPiece(x, y)) {
-        moveTile.push(new coor(x, y));
-        return true;
-    }
-    return false;
+function whosTurn(opp) {
+    return (turn + (opp ? 1 : 0)) % 2;
 }
 
-function noPiece(x, y) {
-    for (let p in players) {
-        if (players[p].pieces.findIndex(i => findCoor(i.pos, x, y)) > -1) {
-            return false;
-        }
-    }
-    return true;
+function coorCheck(x, y) {
+    return rangeCheck(x) && rangeCheck(y);
 }
 
-function tileCheck(x, y) {
-    if (x < 8 && x > -1 && y < 8 && y > -1 && players[turn % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) == -1) {
-        if (players[(turn + 1) % 2].pieces.findIndex(i => findCoor(i.pos, x, y)) == -1) {
-            moveTile.push(new coor(x, y));
-            return true;
-        } else {
-            captureTile.push(new coor(x, y));
-        }
-    }
-    return false;
+function rangeCheck(i) {
+    return i > -1 && i < 8;
 }
 
 function lineCheck(x, y, xM, yM) {
-    let temp = true;
-    for (let i = 1; temp; i++) {
-        temp = tileCheck(x + (xM * i), y + (yM * i));
+    const temp = [];
+    const temp2 = getPiecesPos(-1);
+    for (let i = 1; i == 1 || includesCoor(temp.at(-1), temp2, false); i++) {
+        const temp3 = new coor(x + xM * i, y + yM * i);
+        if (coorCheck(temp3.x, temp3.y)) {
+            temp.push(temp3);
+        } else {
+            return temp;
+        }
     }
+    return temp;
 }
 
 function royalCheck(x, y, r, p) {
+    const temp = [];
     for (let i = -1; i < 2; i += 2) {
-        royalExend(x, y, r, i, p);
+        temp.push(royalExend(x, y, r, i, p));
         if (r == 0) {
-            royalExend(x, y, i, r, p);
-            royalCheck(x, y, i, p);
+            temp.push(royalExend(x, y, i, r, p));
+            temp.push(royalCheck(x, y, i, p));
         }
     }
+    return temp;
 }
 
 function royalExend(x, y, xM, yM, p) {
     if (p) {
-        lineCheck(x, y, xM, yM);
+        return lineCheck(x, y, xM, yM);
     } else {
-        tileCheck(x + xM, y + yM);
-    }
-}
-
-//animations
-function movePiece() {
-    ctx.drawImage(backup1, 0, 0);
-    const now = new Date - beginAnimation;
-    if (now < aniLength) {
-        const appearing = now / aniLength;
-        if (capturePiece != undefined) {
-            ctx.globalAlpha = 1 - appearing;
-            capturePiece.drawPiece();
-        }
-        const xm = ((mirror(xa) * grid) - (mirror(slct.pos.x) * grid)) / aniLength;
-        const ym = ((mirror(ya) * grid) - (mirror(slct.pos.y) * grid)) / aniLength;
-        if (promotion == undefined) {
-            ctx.globalAlpha = 1;
-        } else if (capturePiece == undefined) {
-            ctx.globalAlpha = 1 - appearing;
-        }
-        ctx.drawImage(slct.asset, movement(slct.pos.x, xm, now), movement(slct.pos.y, ym, now));
-        if (promotion != undefined) {
-            ctx.globalAlpha = appearing;
-            ctx.drawImage(promotion.asset, movement(slct.pos.x, xm, now), movement(slct.pos.y, ym, now));
-        }
-        window.requestAnimationFrame(movePiece);
-    } else {
-        if (promotion == undefined) {
-            slct.pos = new coor(xa, ya);
+        if (coorCheck(x + xM, y + yM)) {
+            return new coor(x + xM, y + yM);
         } else {
-            const temp = players[turn % 2].pieces.findIndex(i => findCoor(slct.pos, i.pos.x, i.pos.y));
-            players[turn % 2].pieces.splice(temp, 1);
-            players[turn % 2].pieces.push(promotion);
-            promotion = undefined;
+            return [];
         }
-        slct = undefined;
-        drawGame();
-        turn++;
-        if (noRotate) {
-            noAni = true;
+    }
+}
+
+function coorFilter(temp, temp2, incl) {
+    return temp.filter(i => includesCoor(i, temp2, incl));
+}
+
+function includesCoor(item, temp, incl) {
+    const test = temp.findIndex(i => isCoor(item, i.x, i.y));
+    return incl ? test > -1 : test == -1;
+}
+
+function isCoor(c, x, y) {
+    return c.x == x && c.y == y;
+}
+
+function flatten(temp) {
+    const temp2 = [];
+    temp.forEach(function deeper(item) {
+        if (Array.isArray(item)) {
+            item.forEach(deeper);
         } else {
-            ctx2.drawImage(canvas, 0, 0);
-            drawGame();
-            ctx3.drawImage(canvas, 0, 0);
-            ctx.drawImage(backup1, 0, 0);
-            beginAnimation = new Date();
-            window.requestAnimationFrame(mirrorBoard);
+            temp2.push(item);
         }
-    }
+    });
+    return temp2;
 }
 
-function movement(l, m, t) {
-    return mirror(l) * grid + m * t;
-}
-
-function mirrorBoard() {
-    const now = new Date - beginAnimation;
-    if (now < aniLength) {
-        ctx.save();
-        ctx.drawImage(backup2, 0, 0);
-        ctx.globalAlpha = (aniLength - now) / aniLength;
-        ctx.drawImage(backup1, 0, 0);
-        ctx.restore();
-        window.requestAnimationFrame(mirrorBoard);
+function getPiecesPos(x) {
+    const temp = [];
+    if (x == -1) {
+        players.forEach(function (i) {
+            i.pieces.forEach(function (item) {
+                temp.push(item.pos);
+            });
+        });
     } else {
-        ctx.drawImage(backup2, 0, 0);
-        noAni = true;
+        players[x].pieces.forEach(function (i) {
+            temp.push(i.pos);
+        });
     }
+    return temp;
+}
+
+function straightLiners(opp) {
+    return players[whosTurn(opp)].pieces.filter(x => ["queen", "rook", "bishop"].includes(x.name));
+}
+
+function posCheck(a, b) {
+    return new coor(subCheck(a.x, b.x), subCheck(a.y, b.y));
+}
+
+function subCheck(a, b) {
+    if (a < b) {
+        return 1;
+    } else if (a > b) {
+        return -1;
+    }
+    return 0;
+}
+
+function kingCheck(temp, p) {
+    const temp2 = players[whosTurn(false)].pieces.find(x => x.name == "king").pos;
+    const temp3 = straightLinersCheck(temp, p, temp2);
+    const temp4 = kingThreat();
+    if (temp4.length > 1) {
+        return [];
+    }
+    if (temp4.length == 1) {
+        const temp5 = [];
+        straightLiners(true).forEach(function (item) {
+            temp5.push(item.pos);
+        });
+        if (includesCoor(temp4[0], temp5, true)) {
+            const temp6 = posCheck(temp2, temp4[0]);
+            return coorFilter(temp3, lineCheck(temp2.x, temp2.y, temp6.x, temp6.y), true);
+        }
+        return coorFilter(temp4, temp3, true);
+    }
+    return temp3;
+}
+
+function kingThreat() {
+    const temp = players[whosTurn(false)].pieces.find(x => x.name == "king").pos;
+    const temp2 = [];
+    players[whosTurn(true)].pieces.forEach(function (item) {
+        if (includesCoor(temp, item.move(false), true)) {
+            temp2.push(item.pos);
+        }
+    });
+    return temp2;
+}
+
+function straightLinersCheck(temp, p, k) {
+    straightLiners(true).forEach(function (item) {
+        if (includesCoor(p, item.move(false), true)) {
+            const temp2 = posCheck(p, item.pos);
+            const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
+            if (temp3.length > 0 && isCoor(temp3.at(-1), k.x, k.y)) {
+                temp3.push(lineCheck(p.x, p.y, temp2.x, temp2.y));
+                return coorFilter(temp, flatten(temp3), true);
+            }
+        }
+    });
+    return temp;
 }
 
 //templating
@@ -719,7 +823,6 @@ function createInfo(content, onClicked) {
     const info = document.createElement("div");
     info.setAttribute("id", "info");
     info.appendChild(content);
-    info.appendChild(createButton("Cancel", () => document.getElementById("dark").remove()));
     info.appendChild(createButton("Ok", onClicked));
     const mid = document.createElement("div");
     mid.setAttribute("id", "mid");
@@ -731,15 +834,15 @@ function createInfo(content, onClicked) {
 }
 
 function promoteInfo(x, y) {
-    const promotionOptions = ["Queen", "Knight", "Rook", "Bishop"];
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
-    promotionOptions.forEach(function (item) {
+    ["Queen", "Knight", "Rook", "Bishop"].forEach(function (item) {
         temp.appendChild(new Option(item));
     });
     const temp2 = document.createElement("div");
+    temp2.appendChild(document.createTextNode(`Promote pawn to:`));
     temp2.appendChild(temp);
-    document.body.appendChild(createInfo(temp2, () => promotePawn(x, y)));
+    body.appendChild(createInfo(temp2, () => promotePawn(x, y)));
 }
 
 function createButton(text, onClicked) {
@@ -756,24 +859,8 @@ function createCanvas(w, h) {
     return temp;
 }
 
-function createSwitch(text, id, onClicked) {
-    const p = document.createElement("p");
-    p.appendChild(document.createTextNode(text + ":"));
-    const input = document.createElement("input");
-    input.setAttribute("type", "checkbox");
-    input.setAttribute("id", id);
-    if (onClicked != undefined) {
-        input.addEventListener("change", onClicked);
-    }
-    const span = document.createElement("span");
-    span.setAttribute("class", "slider");
-    const label = document.createElement("label");
-    label.setAttribute("class", "switch");
-    label.appendChild(input);
-    label.appendChild(span);
-    const div = document.createElement("div");
-    div.setAttribute("class", "switchDiv");
-    div.appendChild(p);
-    div.appendChild(label);
-    return div;
+function createGameInfo(content) {
+    const temp = document.createElement("div");
+    temp.appendChild(document.createTextNode(content));
+    body.appendChild(createInfo(temp, () => document.getElementById("dark").remove()));
 }
