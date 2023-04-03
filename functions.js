@@ -612,7 +612,7 @@ function endTurn() {
     players[whosTurn(false)].pieces.forEach(function (item) {
         temp.push(item.move(true));
     });
-    if (kingThreat.length < 1) {
+    if (kingThreat().length < 1) {
         if (flatten(temp).length < 1) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
         }
