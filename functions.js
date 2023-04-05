@@ -612,12 +612,12 @@ function endTurn() {
     players[whosTurn(false)].pieces.forEach(function (item) {
         temp.push(item.move(true));
     });
-    if (kingThreat().length < 1) {
-        if (flatten(temp).length < 1) {
+    if (kingThreat().length == 0) {
+        if (flatten(temp).length == 0) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
         }
     } else {
-        if (flatten(temp).length < 1) {
+        if (flatten(temp).length == 0) {
             createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
         } else {
             createGameInfo(`Check`);
