@@ -19,7 +19,9 @@ let turn = 0;
 let slct;
 let msPlc;
 let moveTile = [];
+let castleMove = [];
 let board;
+let castleAsset;
 
 //autoplay
 window.onload = function () {
@@ -44,8 +46,8 @@ window.onresize = rescaling;
 function rescaling() {
     scaling();
     drawAssets();
-    players.forEach(function (item, i) {
-        item.pieces.forEach(function (item2) {
+    players.forEach((item, i) => {
+        item.pieces.forEach(item2 => {
             switch (item2.name) {
                 case "king":
                     item2.asset = kingAsset[i];
@@ -75,16 +77,18 @@ function scalePoint(i) {
     return i * (grid / 100);
 }
 
-function fillshape(tmpCtx, colour, outline) {
+function fillshape(tmpCtx, colour, outline, inFull) {
     tmpCtx.closePath();
     tmpCtx.strokeStyle = outline;
     tmpCtx.lineWidth = scalePoint(6);
     tmpCtx.lineCap = "round";
     tmpCtx.lineJoin = "round";
     tmpCtx.stroke();
-    tmpCtx.fillStyle = colour;
-    tmpCtx.fill();
-    tmpCtx.lineWidth = scalePoint(1);
+    if (inFull) {
+        tmpCtx.fillStyle = colour;
+        tmpCtx.fill();
+        tmpCtx.lineWidth = scalePoint(1);
+    }
 }
 
 function drawAssets() {
@@ -106,10 +110,11 @@ function drawAssets() {
     bishopAsset[1] = drawBishop("#000", "#fff");
     queenAsset[0] = drawQueen("#fff", "#000");
     queenAsset[1] = drawQueen("#000", "#fff");
-    kingAsset[0] = drawKing("#fff", "#000");
-    kingAsset[1] = drawKing("#000", "#fff");
+    kingAsset[0] = drawKing("#fff", "#000", true);
+    kingAsset[1] = drawKing("#000", "#fff", true);
     pawnAsset[0] = drawPawn("#fff", "#000");
     pawnAsset[1] = drawPawn("#000", "#fff");
+    castleAsset = drawKing(undefined, "rgba(255, 255, 255, .5)", false);
 }
 
 function drawRook(colour, outline) {
@@ -136,7 +141,7 @@ function drawRook(colour, outline) {
     tmpCtx.lineTo(scalePoint(46), scalePoint(15));
     tmpCtx.lineTo(scalePoint(38), scalePoint(15));
     tmpCtx.lineTo(scalePoint(38), scalePoint(10));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, true);
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(42), scalePoint(90));
     tmpCtx.quadraticCurveTo(scalePoint(50), scalePoint(50), scalePoint(58), scalePoint(90));
@@ -177,7 +182,7 @@ function drawKnight(colour, outline) {
     tmpCtx.quadraticCurveTo(scalePoint(36), scalePoint(38), scalePoint(40), scalePoint(35));
     tmpCtx.lineTo(scalePoint(43), scalePoint(30));
     tmpCtx.bezierCurveTo(scalePoint(40), scalePoint(30), scalePoint(35), scalePoint(20), scalePoint(40), scalePoint(10));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, true);
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(55), scalePoint(86));
     tmpCtx.bezierCurveTo(scalePoint(53), scalePoint(80), scalePoint(58), scalePoint(77), scalePoint(57), scalePoint(76));
@@ -200,7 +205,7 @@ function drawBishop(colour, outline) {
     tmpCtx.quadraticCurveTo(scalePoint(20), scalePoint(20), scalePoint(50), scalePoint(10));
     tmpCtx.quadraticCurveTo(scalePoint(80), scalePoint(20), scalePoint(90), scalePoint(50));
     tmpCtx.lineTo(scalePoint(80), scalePoint(90));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, true);
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(45), scalePoint(85));
     tmpCtx.lineTo(scalePoint(50), scalePoint(50));
@@ -235,11 +240,11 @@ function drawQueen(colour, outline) {
     tmpCtx.lineTo(scalePoint(65), scalePoint(70));
     tmpCtx.lineTo(scalePoint(90), scalePoint(25));
     tmpCtx.lineTo(scalePoint(65), scalePoint(90));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, true);
     return temp;
 }
 
-function drawKing(colour, outline) {
+function drawKing(colour, outline, inFull) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
     tmpCtx.beginPath();
@@ -257,7 +262,7 @@ function drawKing(colour, outline) {
     tmpCtx.lineTo(scalePoint(55), scalePoint(30));
     tmpCtx.quadraticCurveTo(scalePoint(55), scalePoint(90), scalePoint(90), scalePoint(30));
     tmpCtx.quadraticCurveTo(scalePoint(75), scalePoint(65), scalePoint(75), scalePoint(90));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, inFull);
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(50), scalePoint(85));
     tmpCtx.lineTo(scalePoint(45), scalePoint(75));
@@ -265,14 +270,20 @@ function drawKing(colour, outline) {
     tmpCtx.lineTo(scalePoint(55), scalePoint(75));
     tmpCtx.fillStyle = outline;
     tmpCtx.fill();
-    tmpCtx.beginPath();
-    tmpCtx.moveTo(scalePoint(50), scalePoint(65));
-    tmpCtx.lineTo(scalePoint(50), scalePoint(85));
-    tmpCtx.moveTo(scalePoint(45), scalePoint(75));
-    tmpCtx.lineTo(scalePoint(55), scalePoint(75));
-    tmpCtx.strokeStyle = colour;
-    tmpCtx.stroke();
-    return temp;
+    if (inFull) {
+        tmpCtx.beginPath();
+        tmpCtx.moveTo(scalePoint(50), scalePoint(65));
+        tmpCtx.lineTo(scalePoint(50), scalePoint(85));
+        tmpCtx.moveTo(scalePoint(45), scalePoint(75));
+        tmpCtx.lineTo(scalePoint(55), scalePoint(75));
+        tmpCtx.strokeStyle = colour;
+        tmpCtx.stroke();
+        return temp;
+    }
+    const temp2 = createCanvas(grid, grid);
+    const tmp2Ctx = temp2.getContext("2d");
+    tmp2Ctx.drawImage(temp, grid * .25, grid * .25, grid * .5, grid * .5);
+    return temp2;
 }
 
 function drawPawn(colour, outline) {
@@ -286,7 +297,7 @@ function drawPawn(colour, outline) {
     tmpCtx.quadraticCurveTo(scalePoint(75), scalePoint(10), scalePoint(55), scalePoint(35));
     tmpCtx.bezierCurveTo(scalePoint(60), scalePoint(35), scalePoint(60), scalePoint(40), scalePoint(55), scalePoint(40));
     tmpCtx.quadraticCurveTo(scalePoint(55), scalePoint(80), scalePoint(90), scalePoint(90));
-    fillshape(tmpCtx, colour, outline);
+    fillshape(tmpCtx, colour, outline, true);
     return temp;
 }
 
@@ -317,14 +328,11 @@ class king extends piece {
     move(check) {
         let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, false));
         if (check) {
-            const temp2 = [];
-            players[whosTurn(true)].pieces.forEach(function (item) {
-                temp2.push(item.move(false));
-            });
+            const temp2 = getEnemyGrid();
             const temp3 = straightLiners(true);
-            for (let i = 0; i < temp3.length; i++) {
-                if (includesCoor(this.pos, temp3[i].move(false), true)) {
-                    const temp4 = posCheck(this.pos, temp3[i].pos);
+            for (let i of temp3) {
+                if (includesCoor(this.pos, i.move(false), true)) {
+                    const temp4 = posCheck(this.pos, i.pos);
                     temp2.push(new coor(this.pos.x - temp4.x, this.pos.y - temp4.y));
                 }
             }
@@ -493,33 +501,37 @@ function buildPlayers() {
 function drawGame() {
     ctx.drawImage(board, 0, 0);
     if (msPlc != undefined) {
-        ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
+        ctx.fillStyle = "rgba(255, 255, 0, .5)";
         ctx.fillRect(msPlc.x * grid, msPlc.y * grid, grid, grid);
     }
     if (slct != undefined) {
         ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
     }
-    players.forEach(function (item) {
-        item.pieces.forEach(function (item2) {
+    players.forEach(item => {
+        item.pieces.forEach(item2 => {
             item2.drawPiece();
         });
     });
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
+    ctx.strokeStyle = "rgba(0, 255, 0, .7)";
     if (slct != undefined && slct.name != "pawn") {
-        ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-        moveTile.forEach(function (item) {
+        ctx.fillStyle = "rgba(0, 255, 0, .5)";
+        moveTile.forEach(item => {
             drawOption(item, temp);
-        })
-        ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
-        ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+        });
+        castleMove.forEach(item => {
+            drawArc(item);
+            ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
+        });
+        ctx.fillStyle = "rgba(0, 255, 255, .1)";
+        ctx.strokeStyle = "rgba(0, 255, 255, .1)";
         falseMoves(moveTile, temp, false);
     } else {
-        moveTile.forEach(function (temp2, i) {
-            ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-            ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
-            temp2.forEach(function (item) {
+        moveTile.forEach((temp2, i) => {
+            ctx.fillStyle = "rgba(0, 255, 0, .5)";
+            ctx.strokeStyle = "rgba(0, 255, 0, .7)";
+            temp2.forEach(item => {
                 if (i == 0) {
                     drawArc(item);
                 } else {
@@ -542,21 +554,21 @@ function drawGame() {
 
 function drawArc(item) {
     ctx.beginPath();
-    ctx.arc((item.x * grid) + (grid / 2), (item.y * grid) + (grid / 2), grid * 0.25, 0, 2 * Math.PI);
+    ctx.arc((item.x * grid) + (grid / 2), (item.y * grid) + (grid / 2), grid * .3, 0, 2 * Math.PI);
     ctx.fill();
 }
 
 function drawX(item) {
     ctx.beginPath();
-    ctx.moveTo((item.x * grid) + (grid * 0.1), (item.y * grid) + (grid * 0.1));
-    ctx.lineTo((item.x * grid) + (grid * 0.9), (item.y * grid) + (grid * 0.9));
-    ctx.moveTo((item.x * grid) + (grid * 0.1), (item.y * grid) + (grid * 0.9));
-    ctx.lineTo((item.x * grid) + (grid * 0.9), (item.y * grid) + (grid * 0.1));
+    ctx.moveTo((item.x * grid) + (grid * .1), (item.y * grid) + (grid * .1));
+    ctx.lineTo((item.x * grid) + (grid * .9), (item.y * grid) + (grid * .9));
+    ctx.moveTo((item.x * grid) + (grid * .1), (item.y * grid) + (grid * .9));
+    ctx.lineTo((item.x * grid) + (grid * .9), (item.y * grid) + (grid * .1));
     ctx.stroke();
 }
 
 function falseMoves(temp2, temp, opp) {
-    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(function (item) {
+    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(item => {
         drawOption(item, temp);
     });
 }
@@ -573,9 +585,22 @@ function drawOption(item, temp) {
 document.getElementById("game").addEventListener("click", function (e) {
     const temp = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
     if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
+        castleMove = [];
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
         moveTile = slct.move(true);
-    } else if (slct != undefined && includesCoor(temp, flatten(moveTile), true)) {
+        if (slct.name == "king" && slct.start) {
+            for (let i = -1; i < 2; i += 2) {
+                const temp2 = lineCheck(slct.pos.x, slct.pos.y, i, 0);
+                const temp3 = temp2.at(-1);
+                const temp4 = [slct.pos, temp2.at(0), temp2.at(1)];
+                const temp5 = getEnemyGrid();
+                const temp6 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
+                if (temp6 != undefined && temp6.name == "rook" && temp6.start && coorFilter(temp4, temp5, false).length == 3) {
+                    castleMove.push(temp2.at(1));
+                }
+            }
+        }
+    } else if (includesCoor(temp, flatten(moveTile), true)) {
         if (slct.name == "pawn") {
             if (moveTile[0].length == 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
                 slct.enPassant = turn + 1;
@@ -599,6 +624,13 @@ document.getElementById("game").addEventListener("click", function (e) {
             slct.start = false;
         }
         endTurn();
+    } else if (includesCoor(temp, castleMove, true)) {
+        const temp2 = posCheck(slct.pos, temp);
+        const temp3 = lineCheck(temp.x, temp.y, temp2.x, temp2.y).at(-1);
+        const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
+        slct.pos = temp;
+        temp4.pos = new coor(temp.x - temp2.x, temp.y - temp2.y);
+        endTurn();
     } else {
         clearMoveSet();
     }
@@ -609,7 +641,7 @@ function endTurn() {
     turn++;
     clearMoveSet();
     const temp = [];
-    players[whosTurn(false)].pieces.forEach(function (item) {
+    players[whosTurn(false)].pieces.forEach(item => {
         temp.push(item.move(true));
     });
     if (kingThreat().length == 0) {
@@ -649,7 +681,7 @@ function promotePawn(x, y) {
 
 document.getElementById("game").addEventListener("mousemove", function (e) {
     const item = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
-    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, flatten(moveTile), true)) {
+    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, flatten(moveTile), true) || includesCoor(item, castleMove, true)) {
         msPlc = item;
     } else {
         msPlc = undefined;
@@ -661,6 +693,7 @@ function clearMoveSet() {
     slct = undefined;
     msPlc = undefined;
     moveTile = [];
+    castleMove = [];
 }
 
 //move checks
@@ -742,13 +775,13 @@ function flatten(temp) {
 function getPiecesPos(x) {
     const temp = [];
     if (x == -1) {
-        players.forEach(function (i) {
-            i.pieces.forEach(function (item) {
+        players.forEach(i => {
+            i.pieces.forEach(item => {
                 temp.push(item.pos);
             });
         });
     } else {
-        players[x].pieces.forEach(function (i) {
+        players[x].pieces.forEach(i => {
             temp.push(i.pos);
         });
     }
@@ -781,7 +814,7 @@ function kingCheck(temp, p) {
     }
     if (temp4.length == 1) {
         const temp5 = [];
-        straightLiners(true).forEach(function (item) {
+        straightLiners(true).forEach(item => {
             temp5.push(item.pos);
         });
         if (includesCoor(temp4[0], temp5, true)) {
@@ -796,7 +829,7 @@ function kingCheck(temp, p) {
 function kingThreat() {
     const temp = players[whosTurn(false)].pieces.find(x => x.name == "king").pos;
     const temp2 = [];
-    players[whosTurn(true)].pieces.forEach(function (item) {
+    players[whosTurn(true)].pieces.forEach(item => {
         if (includesCoor(temp, item.move(false), true)) {
             temp2.push(item.pos);
         }
@@ -805,7 +838,7 @@ function kingThreat() {
 }
 
 function straightLinersCheck(temp, p, k) {
-    straightLiners(true).forEach(function (item) {
+    straightLiners(true).forEach(item => {
         if (includesCoor(p, item.move(false), true)) {
             const temp2 = posCheck(p, item.pos);
             const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
@@ -816,6 +849,14 @@ function straightLinersCheck(temp, p, k) {
         }
     });
     return temp;
+}
+
+function getEnemyGrid() {
+    const temp = [];
+    players[whosTurn(true)].pieces.forEach(item => {
+        temp.push(item.move(false));
+    });
+    return flatten(temp);
 }
 
 //templating
@@ -836,7 +877,7 @@ function createInfo(content, onClicked) {
 function promoteInfo(x, y) {
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
-    ["Queen", "Knight", "Rook", "Bishop"].forEach(function (item) {
+    ["Queen", "Knight", "Rook", "Bishop"].forEach(item => {
         temp.appendChild(new Option(item));
     });
     const temp2 = document.createElement("div");
