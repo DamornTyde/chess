@@ -611,7 +611,7 @@ document.getElementById("game").addEventListener("click", function (e) {
             const temp2 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y));
             players[whosTurn(true)].pieces.splice(temp2, 1);
         }
-        if (slct.name == "pawn" && temp.y == 0 || temp.y == 7) {
+        if (slct.name == "pawn" && (temp.y == 0 || temp.y == 7)) {
             const temp4 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
             players[whosTurn(false)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
