@@ -592,10 +592,8 @@ document.getElementById("game").addEventListener("click", function (e) {
             for (let i = -1; i < 2; i += 2) {
                 const temp2 = lineCheck(slct.pos.x, slct.pos.y, i, 0);
                 const temp3 = temp2.at(-1);
-                const temp4 = [slct.pos, temp2.at(0), temp2.at(1)];
-                const temp5 = getEnemyGrid();
-                const temp6 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
-                if (temp6 != undefined && temp6.name == "rook" && temp6.start && coorFilter(temp4, temp5, false).length == 3) {
+                const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
+                if (temp4 != undefined && temp4.name == "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getEnemyGrid(), false).length == 3) {
                     castleMove.push(temp2.at(1));
                 }
             }
