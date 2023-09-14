@@ -15,13 +15,15 @@ const html = document.documentElement;
 
 let players = [];
 let grid;
-let turn = 0;
+let lastAction = 0;
 let slct;
 let msPlc;
 let moveTile = [];
 let castleMove = [];
 let board;
 let castleAsset;
+let lock = false;
+let moveHistory = [];
 
 //autoplay
 window.onload = function () {
@@ -310,20 +312,38 @@ class player {
 }
 
 class piece {
-    constructor(name, pos, asset) {
+    constructor(name, points, pos, asset) {
         this.name = name;
+        this.points = points;
         this.pos = pos;
         this.asset = asset;
         this.start = true;
+        this.history = [];
     }
     drawPiece() {
         ctx.drawImage(this.asset, this.pos.x * grid, this.pos.y * grid);
+    }
+    movePiece(newPos) {
+        this.history.push(new movement(this.pos, newPos));
+        this.pos = newPos;
+    }
+    moveCheck() {
+        for (let i = this.history.length - 1; i > -1; i--) {
+            const a = this.history[i - 1].from;
+            if (!isCoor(this.history[i].to, a.x, a.y)) {
+                return false;
+            }
+            if (i - this.history.length == 5) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
 class king extends piece {
     constructor(pos, asset) {
-        super("king", pos, asset);
+        super("king", 0, pos, asset);
     }
     move(check) {
         let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, false));
@@ -345,7 +365,7 @@ class king extends piece {
 
 class queen extends piece {
     constructor(pos, asset) {
-        super("queen", pos, asset);
+        super("queen", 9, pos, asset);
     }
     move(check) {
         let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, true));
@@ -359,7 +379,7 @@ class queen extends piece {
 
 class rook extends piece {
     constructor(pos, asset) {
-        super("rook", pos, asset);
+        super("rook", 5, pos, asset);
     }
     move(check) {
         let temp = [];
@@ -378,7 +398,7 @@ class rook extends piece {
 
 class bishop extends piece {
     constructor(pos, asset) {
-        super("bishop", pos, asset);
+        super("bishop", 3, pos, asset);
     }
     move(check) {
         let temp = [];
@@ -398,7 +418,7 @@ class bishop extends piece {
 
 class knight extends piece {
     constructor(pos, asset) {
-        super("knight", pos, asset);
+        super("knight", 3, pos, asset);
     }
     move(check) {
         let temp = [];
@@ -422,7 +442,7 @@ class knight extends piece {
 
 class pawn extends piece {
     constructor(pos, asset, frwrd) {
-        super("pawn", pos, asset);
+        super("pawn", 1, pos, asset);
         this.frwrd = frwrd;
         this.enPassant = -1;
     }
@@ -449,7 +469,7 @@ class pawn extends piece {
                     temp[1].push(temp3);
                 } else {
                     const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, this.pos.y));
-                    if (temp4 != undefined && temp4.name == "pawn" && temp4.enPassant == turn) {
+                    if (temp4 != undefined && temp4.name == "pawn" && temp4.enPassant == moveHistory.length) {
                         temp[1].push(temp3);
                     }
                 }
@@ -474,11 +494,28 @@ class coor {
     }
 }
 
+class move {
+    constructor(name, from, to) {
+        this.name = name;
+        this.from = from;
+        this.to = to;
+        this.note = "";
+    }
+}
+
+class movement {
+    constructor(from, to) {
+        this.from = from;
+        this.to = to;
+    }
+}
+
 //build game
 function buildPlayers() {
     clearMoveSet();
     players = [];
-    turn = 0;
+    moveHistory = [];
+    console.log("new game");
     const playerNames = ["White", "Black"];
     for (let i = 0; i < 2; i++) {
         const temp = new player(playerNames[i]);
@@ -584,7 +621,7 @@ function drawOption(item, temp) {
 //input
 document.getElementById("game").addEventListener("click", function (e) {
     const temp = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
-    if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
+    if (includesCoor(temp, getPiecesPos(whosTurn(false)), true) && !lock) {
         castleMove = [];
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
         moveTile = slct.move(true);
@@ -599,35 +636,52 @@ document.getElementById("game").addEventListener("click", function (e) {
             }
         }
     } else if (includesCoor(temp, flatten(moveTile), true)) {
+        moveHistory.push(new move(slct.name, slct.pos, temp));
         if (slct.name == "pawn") {
+            lastAction = moveHistory.length -1;
             if (moveTile[0].length == 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
-                slct.enPassant = turn + 1;
-            } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(true)), false)) {
-                const temp3 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y - slct.frwrd));
-                players[whosTurn(true)].pieces.splice(temp3, 1);
+                slct.enPassant = moveHistory.length;
+            } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
+                const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y - slct.frwrd));
+                players[whosTurn(false)].pieces.splice(temp3, 1);
+                moveHistory.at(-1).note = "-pawn";
             }
         }
-        if (includesCoor(temp, getPiecesPos(whosTurn(true)), true)) {
-            const temp2 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y));
-            players[whosTurn(true)].pieces.splice(temp2, 1);
+        if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
+            lastAction = moveHistory.length -1;
+            const temp2 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y));
+            moveHistory.at(-1).note = `-${players[whosTurn(false)].pieces[temp2].name}`;
+            players[whosTurn(false)].pieces.splice(temp2, 1);
         }
         if (slct.name == "pawn" && (temp.y == 0 || temp.y == 7)) {
-            const temp4 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
-            players[whosTurn(false)].pieces.splice(temp4, 1);
+            const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
+            players[whosTurn(true)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
             return;
         }
-        slct.pos = temp;
+        slct.movePiece(temp);
+        const exclude = ["pawn", "king"];
+        if (!exclude.includes(slct.name) && slct.moveCheck()) {
+            players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name)).forEach(item => {
+                if (item.moveCheck()) {
+                    alert("Draw because the game is going nowhere");
+                    lock = true;
+                }
+            });
+        }
         if (slct.start) {
             slct.start = false;
         }
         endTurn();
     } else if (includesCoor(temp, castleMove, true)) {
-        const temp2 = posCheck(slct.pos, temp);
-        const temp3 = lineCheck(temp.x, temp.y, temp2.x, temp2.y).at(-1);
+        const temp2 = subCheck(slct.pos.x, temp.x);
+        const temp3 = lineCheck(temp.x, temp.y, temp2, 0).at(-1);
         const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
-        slct.pos = temp;
-        temp4.pos = new coor(temp.x - temp2.x, temp.y - temp2.y);
+        moveHistory.push(new move(slct.name, slct.pos, temp));
+        moveHistory.at(-1).note = "castle";
+        slct.start = false;
+        slct.movePiece(temp);
+        temp4.movePiece(new coor(temp.x - temp2, temp.y));
         endTurn();
     } else {
         clearMoveSet();
@@ -636,7 +690,24 @@ document.getElementById("game").addEventListener("click", function (e) {
 });
 
 function endTurn() {
-    turn++;
+    if (moveHistory.length - lastAction == 50) {
+        alert("Draw because the game is boring");
+        lock = true;
+    }
+    if (noPawn()) {
+        const temp = [];
+        players.forEach(i => {
+            let points = 0;
+            i.pieces.forEach(item => {
+                points += item.points;
+            });
+            temp.push(points);
+        });
+        if (Math.max(...temp) < 6) {
+            alert("Draw: Checkmate aint possible");
+            lock = true;
+        }
+    }
     clearMoveSet();
     const temp = [];
     players[whosTurn(false)].pieces.forEach(item => {
@@ -653,25 +724,28 @@ function endTurn() {
             createGameInfo(`Check`);
         }
     }
+    const temp2 = moveHistory.at(-1);
+    console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
 }
 
 function promotePawn(x, y) {
     let temp;
     switch (document.getElementById("infoSelect").value) {
         case "Queen":
-            temp = new queen(new coor(x, y), queenAsset[whosTurn(false)]);
+            temp = new queen(new coor(x, y), queenAsset[whosTurn(true)]);
             break;
         case "Knight":
-            temp = new knight(new coor(x, y), knightAsset[whosTurn(false)]);
+            temp = new knight(new coor(x, y), knightAsset[whosTurn(true)]);
             break;
         case "Rook":
-            temp = new rook(new coor(x, y), rookAsset[whosTurn(false)]);
+            temp = new rook(new coor(x, y), rookAsset[whosTurn(true)]);
             break;
         case "Bishop":
-            temp = new bishop(new coor(x, y), bishopAsset[whosTurn(false)]);
+            temp = new bishop(new coor(x, y), bishopAsset[whosTurn(true)]);
     }
+    moveHistory.at(-1).note += `+${temp.name}`;
     temp.start = false;
-    players[whosTurn(false)].pieces.push(temp);
+    players[whosTurn(true)].pieces.push(temp);
     document.getElementById("dark").remove();
     endTurn();
     drawGame();
@@ -696,7 +770,7 @@ function clearMoveSet() {
 
 //move checks
 function whosTurn(opp) {
-    return (turn + (opp ? 1 : 0)) % 2;
+    return (moveHistory.length + (opp ? 1 : 0)) % 2;
 }
 
 function coorCheck(x, y) {
@@ -855,6 +929,17 @@ function getEnemyGrid() {
         temp.push(item.move(false));
     });
     return flatten(temp);
+}
+
+function noPawn() {
+    players.forEach(i => {
+        i.pieces.forEach(item => {
+            if (item.name == "pawn") {
+                return false;
+            }
+        });
+    });
+    return true;
 }
 
 //templating
