@@ -329,7 +329,7 @@ class piece {
     }
     moveCheck() {
         if (this.history.length > 1) {
-            for (let i = this.history.length - 1; i > -1; i--) {
+            for (let i = this.history.length - 1; i > 0; i--) {
                 const a = this.history[i - 1].from;
                 if (!isCoor(this.history[i].to, a.x, a.y)) {
                     return false;
