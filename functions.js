@@ -334,7 +334,7 @@ class piece {
                 if (!isCoor(this.history[i].to, a.x, a.y)) {
                     return false;
                 }
-                if (this.history.length - i == 5) {
+                if (this.history.length - i == 4) {
                     return true;
                 }
             }
