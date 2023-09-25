@@ -93,16 +93,35 @@ function fillshape(tmpCtx, colour, outline, inFull) {
     }
 }
 
+function arcTip(temp, x, y) {
+    temp.lineTo(x, y);
+    temp.arc(x, y, scalePoint(3), 0, 2 * Math.PI);
+    temp.lineTo(x, y);
+}
+
 function drawAssets() {
+    const light = "#800";
+    const dark = "#200";
     board = createCanvas(canvas.width, canvas.width);
     const brdCtx = board.getContext("2d");
-    brdCtx.fillStyle = "#200";
+    brdCtx.fillStyle = dark;
     brdCtx.fillRect(0, 0, canvas.width, canvas.width);
-    brdCtx.fillStyle = "#800";
+    brdCtx.fillStyle = light;
     for (let x = 0; x < 8; x++) {
         for (let y = x % 2; y < 8; y += 2) {
             brdCtx.fillRect(x * grid, y * grid, grid, grid);
         }
+    }
+    brdCtx.font = `${scalePoint(20)}px Arial`;
+    brdCtx.lineWidth = scalePoint(2);
+    for (let i = 1; i < 9; i++) {
+        if (i % 2 == 0) {
+            brdCtx.strokeStyle = dark;
+        } else {
+            brdCtx.strokeStyle = light;
+        }
+        brdCtx.strokeText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
+        brdCtx.strokeText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
     rookAsset[0] = drawRook("#fff", "#000");
     rookAsset[1] = drawRook("#000", "#fff");
@@ -202,23 +221,23 @@ function drawBishop(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
     tmpCtx.beginPath();
-    tmpCtx.moveTo(scalePoint(20), scalePoint(90));
-    tmpCtx.lineTo(scalePoint(10), scalePoint(50));
+    tmpCtx.moveTo(scalePoint(25), scalePoint(90));
+    tmpCtx.lineTo(scalePoint(15), scalePoint(50));
     tmpCtx.quadraticCurveTo(scalePoint(20), scalePoint(20), scalePoint(50), scalePoint(10));
-    tmpCtx.quadraticCurveTo(scalePoint(80), scalePoint(20), scalePoint(90), scalePoint(50));
-    tmpCtx.lineTo(scalePoint(80), scalePoint(90));
+    tmpCtx.quadraticCurveTo(scalePoint(80), scalePoint(20), scalePoint(85), scalePoint(50));
+    tmpCtx.lineTo(scalePoint(75), scalePoint(90));
     fillshape(tmpCtx, colour, outline, true);
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(45), scalePoint(85));
     tmpCtx.lineTo(scalePoint(50), scalePoint(50));
-    tmpCtx.lineTo(scalePoint(15), scalePoint(50));
-    tmpCtx.lineTo(scalePoint(20), scalePoint(40));
+    tmpCtx.lineTo(scalePoint(20), scalePoint(50));
+    tmpCtx.lineTo(scalePoint(23), scalePoint(40));
     tmpCtx.lineTo(scalePoint(50), scalePoint(50));
-    tmpCtx.lineTo(scalePoint(45), scalePoint(20));
-    tmpCtx.lineTo(scalePoint(55), scalePoint(20));
+    tmpCtx.lineTo(scalePoint(45), scalePoint(17));
+    tmpCtx.lineTo(scalePoint(55), scalePoint(17));
     tmpCtx.lineTo(scalePoint(50), scalePoint(50));
-    tmpCtx.lineTo(scalePoint(80), scalePoint(40));
-    tmpCtx.lineTo(scalePoint(85), scalePoint(50));
+    tmpCtx.lineTo(scalePoint(77), scalePoint(40));
+    tmpCtx.lineTo(scalePoint(80), scalePoint(50));
     tmpCtx.lineTo(scalePoint(50), scalePoint(50));
     tmpCtx.lineTo(scalePoint(55), scalePoint(85));
     tmpCtx.closePath();
@@ -232,15 +251,15 @@ function drawQueen(colour, outline) {
     const tmpCtx = temp.getContext("2d");
     tmpCtx.beginPath();
     tmpCtx.moveTo(scalePoint(35), scalePoint(90));
-    tmpCtx.lineTo(scalePoint(10), scalePoint(25));
-    tmpCtx.lineTo(scalePoint(35), scalePoint(70));
-    tmpCtx.lineTo(scalePoint(30), scalePoint(15));
-    tmpCtx.lineTo(scalePoint(44), scalePoint(65));
-    tmpCtx.lineTo(scalePoint(50), scalePoint(10));
-    tmpCtx.lineTo(scalePoint(56), scalePoint(65));
-    tmpCtx.lineTo(scalePoint(70), scalePoint(15));
-    tmpCtx.lineTo(scalePoint(65), scalePoint(70));
-    tmpCtx.lineTo(scalePoint(90), scalePoint(25));
+    arcTip(tmpCtx, scalePoint(15), scalePoint(25));
+    tmpCtx.lineTo(scalePoint(35), scalePoint(60));
+    arcTip(tmpCtx, scalePoint(30), scalePoint(15));
+    tmpCtx.lineTo(scalePoint(44), scalePoint(55));
+    arcTip(tmpCtx, scalePoint(50), scalePoint(10));
+    tmpCtx.lineTo(scalePoint(56), scalePoint(55));
+    arcTip(tmpCtx, scalePoint(70), scalePoint(15));
+    tmpCtx.lineTo(scalePoint(65), scalePoint(60));
+    arcTip(tmpCtx, scalePoint(85), scalePoint(25));
     tmpCtx.lineTo(scalePoint(65), scalePoint(90));
     fillshape(tmpCtx, colour, outline, true);
     return temp;
@@ -292,13 +311,13 @@ function drawPawn(colour, outline) {
     const temp = createCanvas(grid, grid);
     const tmpCtx = temp.getContext("2d");
     tmpCtx.beginPath();
-    tmpCtx.moveTo(scalePoint(10), scalePoint(90));
-    tmpCtx.quadraticCurveTo(scalePoint(45), scalePoint(80), scalePoint(45), scalePoint(40));
+    tmpCtx.moveTo(scalePoint(20), scalePoint(80));
+    tmpCtx.quadraticCurveTo(scalePoint(45), scalePoint(70), scalePoint(45), scalePoint(40));
     tmpCtx.bezierCurveTo(scalePoint(40), scalePoint(40), scalePoint(40), scalePoint(35), scalePoint(45), scalePoint(35));
-    tmpCtx.quadraticCurveTo(scalePoint(25), scalePoint(10), scalePoint(50), scalePoint(10));
-    tmpCtx.quadraticCurveTo(scalePoint(75), scalePoint(10), scalePoint(55), scalePoint(35));
+    tmpCtx.quadraticCurveTo(scalePoint(35), scalePoint(20), scalePoint(50), scalePoint(20));
+    tmpCtx.quadraticCurveTo(scalePoint(65), scalePoint(20), scalePoint(55), scalePoint(35));
     tmpCtx.bezierCurveTo(scalePoint(60), scalePoint(35), scalePoint(60), scalePoint(40), scalePoint(55), scalePoint(40));
-    tmpCtx.quadraticCurveTo(scalePoint(55), scalePoint(80), scalePoint(90), scalePoint(90));
+    tmpCtx.quadraticCurveTo(scalePoint(55), scalePoint(70), scalePoint(80), scalePoint(80));
     fillshape(tmpCtx, colour, outline, true);
     return temp;
 }
@@ -328,15 +347,13 @@ class piece {
         this.pos = newPos;
     }
     moveCheck() {
-        if (this.history.length > 1) {
-            for (let i = this.history.length - 1; i > 0; i--) {
-                const a = this.history[i - 1].from;
-                if (!isCoor(this.history[i].to, a.x, a.y)) {
-                    return false;
-                }
-                if (this.history.length - i == 4) {
-                    return true;
-                }
+        for (let i = this.history.length - 1; i > 0; i--) {
+            const a = this.history[i - 1].from;
+            if (!isCoor(this.history[i].to, a.x, a.y)) {
+                return false;
+            }
+            if (this.history.length - i == 4) {
+                return true;
             }
         }
         return false;
@@ -546,6 +563,12 @@ function drawGame() {
     if (slct != undefined) {
         ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
     }
+    ctx.fillStyle = "rgba(0, 0, 255, .3)";
+    if (moveHistory.length > 0) {
+        const temp = moveHistory.at(-1);
+        ctx.fillRect(temp.from.x * grid, temp.from.y * grid, grid, grid);
+        ctx.fillRect(temp.to.x * grid, temp.to.y * grid, grid, grid);
+    }
     players.forEach(item => {
         item.pieces.forEach(item2 => {
             item2.drawPiece();
@@ -563,8 +586,8 @@ function drawGame() {
             drawArc(item);
             ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
         });
-        ctx.fillStyle = "rgba(0, 255, 255, .1)";
-        ctx.strokeStyle = "rgba(0, 255, 255, .1)";
+        ctx.fillStyle = "rgba(0, 255, 255, .2)";
+        ctx.strokeStyle = "rgba(0, 255, 255, .2)";
         falseMoves(moveTile, temp, false);
     } else {
         moveTile.forEach((temp2, i) => {
@@ -577,8 +600,8 @@ function drawGame() {
                     drawX(item);
                 }
             });
-            ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
-            ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+            ctx.fillStyle = "rgba(0, 255, 255, 0.2)";
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
             if (i == 0) {
                 const item = new coor(slct.pos.x, slct.pos.y + slct.frwrd);
                 if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
