@@ -112,16 +112,15 @@ function drawAssets() {
             brdCtx.fillRect(x * grid, y * grid, grid, grid);
         }
     }
-    brdCtx.font = `${scalePoint(20)}px Arial`;
-    brdCtx.lineWidth = scalePoint(2);
+    brdCtx.font = `900 ${scalePoint(20)}px Arial`;
     for (let i = 1; i < 9; i++) {
         if (i % 2 == 0) {
-            brdCtx.strokeStyle = dark;
+            brdCtx.fillStyle = dark;
         } else {
-            brdCtx.strokeStyle = light;
+            brdCtx.fillStyle = light;
         }
-        brdCtx.strokeText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
-        brdCtx.strokeText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
+        brdCtx.fillText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
+        brdCtx.fillText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
     rookAsset[0] = drawRook("#fff", "#000");
     rookAsset[1] = drawRook("#000", "#fff");
@@ -364,15 +363,16 @@ class king extends piece {
     constructor(pos, asset) {
         super("king", 0, pos, asset);
     }
-    move(check) {
-        let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, false));
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
+        let temp = flatten(royalCheck(place.x, place.y, 0, false));
         if (check) {
             const temp2 = getEnemyGrid();
             const temp3 = straightLiners(true);
             for (let i of temp3) {
-                if (includesCoor(this.pos, i.move(false), true)) {
-                    const temp4 = posCheck(this.pos, i.pos);
-                    temp2.push(new coor(this.pos.x - temp4.x, this.pos.y - temp4.y));
+                if (includesCoor(place, i.move(false), true)) {
+                    const temp4 = posCheck(place, i.pos);
+                    temp2.push(new coor(place.x - temp4.x, place.y - temp4.y));
                 }
             }
             temp = coorFilter(temp, flatten(temp2), false);
@@ -386,10 +386,11 @@ class queen extends piece {
     constructor(pos, asset) {
         super("queen", 9, pos, asset);
     }
-    move(check) {
-        let temp = flatten(royalCheck(this.pos.x, this.pos.y, 0, true));
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
+        let temp = flatten(royalCheck(place.x, place.y, 0, true));
         if (check) {
-            temp = kingCheck(temp, this.pos);
+            temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -400,15 +401,16 @@ class rook extends piece {
     constructor(pos, asset) {
         super("rook", 5, pos, asset);
     }
-    move(check) {
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
-            temp.push(lineCheck(this.pos.x, this.pos.y, i, 0));
-            temp.push(lineCheck(this.pos.x, this.pos.y, 0, i));
+            temp.push(lineCheck(place.x, place.y, i, 0));
+            temp.push(lineCheck(place.x, place.y, 0, i));
         }
         temp = flatten(temp);
         if (check) {
-            temp = kingCheck(temp, this.pos);
+            temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -419,16 +421,17 @@ class bishop extends piece {
     constructor(pos, asset) {
         super("bishop", 3, pos, asset);
     }
-    move(check) {
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -1; i2 < 2; i2 += 2) {
-                temp.push(lineCheck(this.pos.x, this.pos.y, i, i2));
+                temp.push(lineCheck(place.x, place.y, i, i2));
             }
         }
         temp = flatten(temp);
         if (check) {
-            temp = kingCheck(temp, this.pos);
+            temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -439,20 +442,21 @@ class knight extends piece {
     constructor(pos, asset) {
         super("knight", 3, pos, asset);
     }
-    move(check) {
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -2; i2 < 3; i2 += 4) {
-                if (coorCheck(this.pos.x + i, this.pos.y + i2)) {
-                    temp.push(new coor(this.pos.x + i, this.pos.y + i2));
+                if (coorCheck(place.x + i, place.y + i2)) {
+                    temp.push(new coor(place.x + i, place.y + i2));
                 }
-                if (coorCheck(this.pos.x + i2, this.pos.y + i)) {
-                    temp.push(new coor(this.pos.x + i2, this.pos.y + i));
+                if (coorCheck(place.x + i2, place.y + i)) {
+                    temp.push(new coor(place.x + i2, place.y + i));
                 }
             }
         }
         if (check) {
-            temp = kingCheck(temp, this.pos);
+            temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -465,7 +469,8 @@ class pawn extends piece {
         this.frwrd = frwrd;
         this.enPassant = -1;
     }
-    move(check) {
+    move(check, ghost) {
+        const place = ghostCheck(this.pos, ghost);
         let temp;
         if (check) {
             temp = [
@@ -473,33 +478,33 @@ class pawn extends piece {
                 []
             ];
             let temp2 = getPiecesPos(-1);
-            let temp3 = new coor(this.pos.x, this.pos.y + this.frwrd);
+            let temp3 = new coor(place.x, place.y + this.frwrd);
             if (includesCoor(temp3, temp2, false)) {
                 temp[0].push(temp3);
-                temp3 = new coor(this.pos.x, this.pos.y + this.frwrd * 2)
+                temp3 = new coor(place.x, place.y + this.frwrd * 2)
                 if (this.start && includesCoor(temp3, temp2, false)) {
                     temp[0].push(temp3);
                 }
             }
             temp2 = getPiecesPos(whosTurn(true));
             for (let i = -1; i < 2; i += 2) {
-                temp3 = new coor(this.pos.x + i, this.pos.y + this.frwrd);
+                temp3 = new coor(place.x + i, place.y + this.frwrd);
                 if (includesCoor(temp3, temp2, true)) {
                     temp[1].push(temp3);
                 } else {
-                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, this.pos.y));
+                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, place.y));
                     if (temp4 != undefined && temp4.name == "pawn" && temp4.enPassant == moveHistory.length) {
                         temp[1].push(temp3);
                     }
                 }
             }
             for (let i = 0; i < temp.length; i++) {
-                temp[i] = kingCheck(temp[i], this.pos);
+                temp[i] = kingCheck(temp[i], place);
             }
         } else {
             temp = [];
             for (let i = -1; i < 2; i += 2) {
-                temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
+                temp.push(new coor(place.x + i, place.y + this.frwrd));
             }
         }
         return temp;
@@ -793,7 +798,7 @@ function clearMoveSet() {
     castleMove = [];
 }
 
-//move checks
+//checks
 function whosTurn(opp) {
     return (moveHistory.length + (opp ? 1 : 0)) % 2;
 }
@@ -965,6 +970,13 @@ function noPawn() {
         });
     });
     return true;
+}
+
+function ghostCheck(pos, ghost) {
+    if (ghost != undefined) {
+        return ghost;
+    }
+    return pos;
 }
 
 //templating
