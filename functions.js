@@ -24,6 +24,7 @@ let board;
 let castleAsset;
 let lock = false;
 let moveHistory = [];
+let botPlayers = [];
 
 //autoplay
 window.onload = function () {
@@ -32,7 +33,7 @@ window.onload = function () {
     buildPlayers();
 };
 
-menu.appendChild(createButton("Reset", () => buildPlayers()));
+menu.appendChild(createButton("New Game", () => buildPlayers()));
 
 //scaling
 function scaling() {
@@ -518,19 +519,18 @@ class coor {
     }
 }
 
-class move {
-    constructor(name, from, to) {
-        this.name = name;
-        this.from = from;
-        this.to = to;
-        this.note = "";
-    }
-}
-
 class movement {
     constructor(from, to) {
         this.from = from;
         this.to = to;
+    }
+}
+
+class move extends movement {
+    constructor(name, from, to) {
+        super(from, to);
+        this.name = name;
+        this.note = "";
     }
 }
 
@@ -556,6 +556,8 @@ function buildPlayers() {
         players.push(temp);
     }
     drawGame();
+    //botInfo();
+    lock = false;
 }
 
 //draw game
@@ -651,6 +653,10 @@ function drawOption(item, temp) {
 //input
 document.getElementById("game").addEventListener("click", function (e) {
     const temp = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
+    input(temp);
+});
+
+function input(temp, promotion) {
     if (includesCoor(temp, getPiecesPos(whosTurn(false)), true) && !lock) {
         castleMove = [];
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
@@ -687,17 +693,16 @@ document.getElementById("game").addEventListener("click", function (e) {
             const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
             players[whosTurn(true)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
+            if (promotion != undefined) {
+                document.querySelector("#infoSelect").value = promotion;
+                document.querySelector("#ok").click();
+            }
             return;
         }
         slct.movePiece(temp);
-        const exclude = ["pawn", "king"];
-        if (!exclude.includes(slct.name) && slct.moveCheck()) {
-            players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name)).forEach(item => {
-                if (item.moveCheck()) {
-                    alert("Draw because the game is going nowhere");
-                    lock = true;
-                }
-            });
+        if (!["pawn", "king"].includes(slct.name) && slct.moveCheck()) {
+            createGameInfo("Draw because the game is going nowhere");
+            lock = true;
         }
         if (slct.start) {
             slct.start = false;
@@ -717,11 +722,11 @@ document.getElementById("game").addEventListener("click", function (e) {
         clearMoveSet();
     }
     drawGame();
-});
+}
 
 function endTurn() {
     if (moveHistory.length - lastAction == 50) {
-        alert("Draw because the game is boring");
+        createGameInfo("Draw because the game is boring");
         lock = true;
     }
     if (noPawn()) {
@@ -734,18 +739,20 @@ function endTurn() {
             temp.push(points);
         });
         if (Math.max(...temp) < 6) {
-            alert("Draw: Checkmate aint possible");
+            createGameInfo("Draw: Checkmate aint possible");
             lock = true;
         }
     }
     clearMoveSet();
     const temp = [];
+    let notify = false;
     players[whosTurn(false)].pieces.forEach(item => {
         temp.push(item.move(true));
     });
     if (kingThreat().length == 0) {
         if (flatten(temp).length == 0) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
+            notify = true;
         }
     } else {
         if (flatten(temp).length == 0) {
@@ -753,9 +760,13 @@ function endTurn() {
         } else {
             createGameInfo(`Check`);
         }
+        notify = true;
     }
     const temp2 = moveHistory.at(-1);
     console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
+    if (!notify && !lock) {
+        botMove();
+    }
 }
 
 function promotePawn(x, y) {
@@ -779,6 +790,17 @@ function promotePawn(x, y) {
     document.getElementById("dark").remove();
     endTurn();
     drawGame();
+}
+
+function setBot() {
+    botPlayers = [];
+    document.querySelectorAll(".checkBot").forEach((item, i) => {
+        if (item.checked) {
+            botPlayers.push(i);
+        }
+    });
+    document.getElementById("dark").remove();
+    botMove();
 }
 
 document.getElementById("game").addEventListener("mousemove", function (e) {
@@ -945,8 +967,9 @@ function straightLinersCheck(temp, p, k) {
             const temp2 = posCheck(p, item.pos);
             const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
             if (temp3.length > 0 && isCoor(temp3.at(-1), k.x, k.y)) {
+                console.log("test");
                 temp3.push(lineCheck(p.x, p.y, temp2.x, temp2.y));
-                return coorFilter(temp, flatten(temp3), true);
+                temp = coorFilter(temp, flatten(temp3), true);
             }
         }
     });
@@ -962,14 +985,13 @@ function getEnemyGrid() {
 }
 
 function noPawn() {
+    let count = 0;
     players.forEach(i => {
-        i.pieces.forEach(item => {
-            if (item.name == "pawn") {
-                return false;
-            }
-        });
+        if (i.pieces.findIndex(x => x.name == "pawn") > -1) {
+            count++;
+        }
     });
-    return true;
+    return count == 0;
 }
 
 function ghostCheck(pos, ghost) {
@@ -979,12 +1001,20 @@ function ghostCheck(pos, ghost) {
     return pos;
 }
 
+function botMove() {
+    if (botPlayers.includes(whosTurn(false))) {
+        bot();
+    }
+}
+
 //templating
 function createInfo(content, onClicked) {
     const info = document.createElement("div");
     info.setAttribute("id", "info");
     info.appendChild(content);
-    info.appendChild(createButton("Ok", onClicked));
+    const ok = createButton("Ok", onClicked);
+    ok.setAttribute("id", "ok");
+    info.appendChild(ok);
     const mid = document.createElement("div");
     mid.setAttribute("id", "mid");
     mid.appendChild(info);
@@ -1024,4 +1054,59 @@ function createGameInfo(content) {
     const temp = document.createElement("div");
     temp.appendChild(document.createTextNode(content));
     body.appendChild(createInfo(temp, () => document.getElementById("dark").remove()));
+    delay(() => clickOk(), 5);
+}
+
+function botInfo() {
+    const temp = document.createElement("div");
+    temp.appendChild(document.createTextNode("Check which player you want to be a bot."));
+    temp.appendChild(document.createElement("br"));
+    temp.appendChild(document.createElement("br"));
+    players.forEach(item => {
+        const checkBox = document.createElement("input");
+        checkBox.setAttribute("type", "checkbox");
+        checkBox.setAttribute("class", "checkBot");
+        const label = document.createElement("label");
+        label.appendChild(checkBox);
+        label.appendChild(document.createTextNode(` ${item.name}`));
+        temp.appendChild(label);
+        temp.appendChild(document.createElement("br"));
+    });
+    body.appendChild(createInfo(temp, () => setBot()));
+}
+
+//bot
+function bot() {
+    const promotions = ["Queen", "Knight", "Rook", "Bishop"];
+    const moves = [];
+    const turn = whosTurn(false);
+    players[turn].pieces.forEach(item => {
+        flatten(item.move(true)).forEach(item2 => {
+            moves.push(new movement(item.pos, item2));
+        });
+    });
+    const action = moves[Math.floor(Math.random() * moves.length)];
+    let promotion = promotions[Math.floor(Math.random() * promotions.length)];
+    delay(() => botSelect(action, promotion), 0.75);
+}
+
+function botSelect(action, promotion) {
+    input(action.from);
+    delay(() => botAction(action.to, promotion), 0.25);
+}
+
+function botAction(action, promotion) {
+    input(action, promotion);
+}
+
+function delay(callback, time) {
+    setTimeout(callback, (time * 1000));
+}
+
+function clickOk() {
+    const ok = document.querySelector("#ok");
+    if (ok != undefined) {
+        ok.click();
+    }
+    botMove();
 }
