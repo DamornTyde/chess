@@ -362,7 +362,7 @@ class piece {
 
 class king extends piece {
     constructor(pos, asset) {
-        super("king", 0, pos, asset);
+        super("king", 90, pos, asset);
     }
     move(check, ghost) {
         const place = ghostCheck(this.pos, ghost);
@@ -700,9 +700,14 @@ function input(temp, promotion) {
             return;
         }
         slct.movePiece(temp);
-        if (!["pawn", "king"].includes(slct.name) && slct.moveCheck()) {
-            createGameInfo("Draw because the game is going nowhere");
-            lock = true;
+        const exclude = ["pawn", "king"]
+        if (!exclude.includes(slct.name) && slct.moveCheck()) {
+            players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name)).forEach(item => {
+                if (item.moveCheck()) {
+                    createGameInfo("Draw because the game is going nowhere");
+                    lock = true;
+                }
+            });
         }
         if (slct.start) {
             slct.start = false;
@@ -733,7 +738,7 @@ function endTurn() {
         const temp = [];
         players.forEach(i => {
             let points = 0;
-            i.pieces.forEach(item => {
+            i.pieces.filter(x => x.name != "king").forEach(item => {
                 points += item.points;
             });
             temp.push(points);
@@ -1085,18 +1090,12 @@ function bot() {
             moves.push(new movement(item.pos, item2));
         });
     });
-    const action = moves[Math.floor(Math.random() * moves.length)];
-    let promotion = promotions[Math.floor(Math.random() * promotions.length)];
-    delay(() => botSelect(action, promotion), 0.75);
+    delay(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 0.75);
 }
 
 function botSelect(action, promotion) {
     input(action.from);
-    delay(() => botAction(action.to, promotion), 0.25);
-}
-
-function botAction(action, promotion) {
-    input(action, promotion);
+    delay(() => input(action.to, promotion), 0.25);
 }
 
 function delay(callback, time) {
