@@ -990,13 +990,12 @@ function getEnemyGrid() {
 }
 
 function noPawn() {
-    let count = 0;
-    players.forEach(i => {
+    for (let i of players) {
         if (i.pieces.findIndex(x => x.name == "pawn") > -1) {
-            count++;
+            return false;
         }
-    });
-    return count == 0;
+    }
+    return true;
 }
 
 function ghostCheck(pos, ghost) {
