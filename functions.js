@@ -734,7 +734,7 @@ function endTurn() {
         createGameInfo("Draw because the game is boring");
         lock = true;
     }
-    if (noPawn()) {
+    if (flatten(players.map(i => i.pieces.filter(x => x.name === "pawn"))).length === 0) {
         const temp = [];
         players.forEach(i => {
             let points = 0;
@@ -987,15 +987,6 @@ function getEnemyGrid() {
         temp.push(item.move(false));
     });
     return flatten(temp);
-}
-
-function noPawn() {
-    for (let i of players) {
-        if (i.pieces.findIndex(x => x.name == "pawn") > -1) {
-            return false;
-        }
-    }
-    return true;
 }
 
 function ghostCheck(pos, ghost) {
