@@ -729,7 +729,7 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
-    const temp = flatten(players[whosTurn(false)].pieces.map(i => i.move(true))).length;
+    const temp = flatten(players[whosTurn(false)].pieces.map(i => i.move(true))).length === 0;
     const temp2 = moveHistory.at(-1);
     let notify = false;
     clearMoveSet();
@@ -745,12 +745,12 @@ function endTurn() {
         }
     }
     if (kingThreat().length === 0) {
-        if (temp === 0) {
+        if (temp) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
             notify = true;
         }
     } else {
-        if (temp === 0) {
+        if (temp) {
             createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
         } else {
             createGameInfo(`Check`);
@@ -930,13 +930,7 @@ function kingCheck(temp, p) {
 
 function kingThreat() {
     const temp = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
-    const temp2 = [];
-    players[whosTurn(true)].pieces.forEach(item => {
-        if (includesCoor(temp, item.move(false), true)) {
-            temp2.push(item.pos);
-        }
-    });
-    return temp2;
+    return players[whosTurn(true)].pieces.filter(i => includesCoor(temp, i.move(false), true)).map(i => i.pos);
 }
 
 function straightLinersCheck(temp, p, k) {
