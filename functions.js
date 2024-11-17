@@ -730,6 +730,12 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
+    clearMoveSet();
+    const temp = [];
+    let notify = false;
+    players[whosTurn(false)].pieces.forEach(item => {
+        temp.push(item.move(true));
+    });
     if (moveHistory.length - lastAction === 50) {
         createGameInfo("Draw because the game is boring");
         lock = true;
@@ -740,12 +746,6 @@ function endTurn() {
             lock = true;
         }
     }
-    clearMoveSet();
-    const temp = [];
-    let notify = false;
-    players[whosTurn(false)].pieces.forEach(item => {
-        temp.push(item.move(true));
-    });
     if (kingThreat().length === 0) {
         if (flatten(temp).length === 0) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
