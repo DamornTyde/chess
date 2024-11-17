@@ -362,7 +362,7 @@ class piece {
 
 class king extends piece {
     constructor(pos, asset) {
-        super("king", 90, pos, asset);
+        super("king", 0, pos, asset);
     }
     move(check, ghost) {
         const place = ghostCheck(this.pos, ghost);
@@ -734,16 +734,8 @@ function endTurn() {
         createGameInfo("Draw because the game is boring");
         lock = true;
     }
-    if (flatten(players.map(i => i.pieces.filter(x => x.name === "pawn"))).length === 0) {
-        const temp = [];
-        players.forEach(i => {
-            let points = 0;
-            i.pieces.filter(x => x.name != "king").forEach(item => {
-                points += item.points;
-            });
-            temp.push(points);
-        });
-        if (Math.max(...temp) < 6) {
+    if (Math.max(...players.map(i => i.pieces.filter(x => x.name === "pawn").length)) === 0) {
+        if (Math.max(...players.map(i => i.pieces.map(x => x.points).reduce((a, x) => a + x))) < 6) {
             createGameInfo("Draw: Checkmate aint possible");
             lock = true;
         }
