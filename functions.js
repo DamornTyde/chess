@@ -115,7 +115,7 @@ function drawAssets() {
     }
     brdCtx.font = `900 ${scalePoint(20)}px Arial`;
     for (let i = 1; i < 9; i++) {
-        if (i % 2 == 0) {
+        if (i % 2 === 0) {
             brdCtx.fillStyle = dark;
         } else {
             brdCtx.fillStyle = light;
@@ -352,7 +352,7 @@ class piece {
             if (!isCoor(this.history[i].to, a.x, a.y)) {
                 return false;
             }
-            if (this.history.length - i == 4) {
+            if (this.history.length - i === 4) {
                 return true;
             }
         }
@@ -494,7 +494,7 @@ class pawn extends piece {
                     temp[1].push(temp3);
                 } else {
                     const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, place.y));
-                    if (temp4 != undefined && temp4.name == "pawn" && temp4.enPassant == moveHistory.length) {
+                    if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) {
                         temp[1].push(temp3);
                     }
                 }
@@ -601,7 +601,7 @@ function drawGame() {
             ctx.fillStyle = "rgba(0, 255, 0, .5)";
             ctx.strokeStyle = "rgba(0, 255, 0, .7)";
             temp2.forEach(item => {
-                if (i == 0) {
+                if (i === 0) {
                     drawArc(item);
                 } else {
                     drawX(item);
@@ -609,7 +609,7 @@ function drawGame() {
             });
             ctx.fillStyle = "rgba(0, 255, 255, 0.2)";
             ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
-            if (i == 0) {
+            if (i === 0) {
                 const item = new coor(slct.pos.x, slct.pos.y + slct.frwrd);
                 if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
                     drawArc(item);
@@ -661,21 +661,21 @@ function input(temp, promotion) {
         castleMove = [];
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
         moveTile = slct.move(true);
-        if (slct.name == "king" && slct.start) {
+        if (slct.name === "king" && slct.start) {
             for (let i = -1; i < 2; i += 2) {
                 const temp2 = lineCheck(slct.pos.x, slct.pos.y, i, 0);
                 const temp3 = temp2.at(-1);
                 const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
-                if (temp4 != undefined && temp4.name == "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getEnemyGrid(), false).length == 3) {
+                if (temp4 != undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getEnemyGrid(), false).length === 3) {
                     castleMove.push(temp2.at(1));
                 }
             }
         }
     } else if (includesCoor(temp, flatten(moveTile), true)) {
         moveHistory.push(new move(slct.name, slct.pos, temp));
-        if (slct.name == "pawn") {
+        if (slct.name === "pawn") {
             lastAction = moveHistory.length -1;
-            if (moveTile[0].length == 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
+            if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
                 slct.enPassant = moveHistory.length;
             } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
                 const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y - slct.frwrd));
@@ -689,7 +689,7 @@ function input(temp, promotion) {
             moveHistory.at(-1).note = `-${players[whosTurn(false)].pieces[temp2].name}`;
             players[whosTurn(false)].pieces.splice(temp2, 1);
         }
-        if (slct.name == "pawn" && (temp.y == 0 || temp.y == 7)) {
+        if (slct.name === "pawn" && (temp.y === 0 || temp.y === 7)) {
             const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
             players[whosTurn(true)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
@@ -730,7 +730,7 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
-    if (moveHistory.length - lastAction == 50) {
+    if (moveHistory.length - lastAction === 50) {
         createGameInfo("Draw because the game is boring");
         lock = true;
     }
@@ -746,13 +746,13 @@ function endTurn() {
     players[whosTurn(false)].pieces.forEach(item => {
         temp.push(item.move(true));
     });
-    if (kingThreat().length == 0) {
-        if (flatten(temp).length == 0) {
+    if (kingThreat().length === 0) {
+        if (flatten(temp).length === 0) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
             notify = true;
         }
     } else {
-        if (flatten(temp).length == 0) {
+        if (flatten(temp).length === 0) {
             createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
         } else {
             createGameInfo(`Check`);
@@ -833,7 +833,7 @@ function rangeCheck(i) {
 function lineCheck(x, y, xM, yM) {
     const temp = [];
     const temp2 = getPiecesPos(-1);
-    for (let i = 1; i == 1 || includesCoor(temp.at(-1), temp2, false); i++) {
+    for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
         const temp3 = new coor(x + xM * i, y + yM * i);
         if (coorCheck(temp3.x, temp3.y)) {
             temp.push(temp3);
@@ -848,7 +848,7 @@ function royalCheck(x, y, r, p) {
     const temp = [];
     for (let i = -1; i < 2; i += 2) {
         temp.push(royalExend(x, y, r, i, p));
-        if (r == 0) {
+        if (r === 0) {
             temp.push(royalExend(x, y, i, r, p));
             temp.push(royalCheck(x, y, i, p));
         }
@@ -874,11 +874,11 @@ function coorFilter(temp, temp2, incl) {
 
 function includesCoor(item, temp, incl) {
     const test = temp.findIndex(i => isCoor(item, i.x, i.y));
-    return incl ? test > -1 : test == -1;
+    return incl ? test > -1 : test === -1;
 }
 
 function isCoor(c, x, y) {
-    return c.x == x && c.y == y;
+    return c.x === x && c.y === y;
 }
 
 function flatten(temp) {
@@ -895,7 +895,7 @@ function flatten(temp) {
 
 function getPiecesPos(x) {
     const temp = [];
-    if (x == -1) {
+    if (x === -1) {
         players.forEach(i => {
             i.pieces.forEach(item => {
                 temp.push(item.pos);
@@ -927,13 +927,13 @@ function subCheck(a, b) {
 }
 
 function kingCheck(temp, p) {
-    const temp2 = players[whosTurn(false)].pieces.find(x => x.name == "king").pos;
+    const temp2 = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
     const temp3 = straightLinersCheck(temp, p, temp2);
     const temp4 = kingThreat();
     if (temp4.length > 1) {
         return [];
     }
-    if (temp4.length == 1) {
+    if (temp4.length === 1) {
         const temp5 = [];
         straightLiners(true).forEach(item => {
             temp5.push(item.pos);
@@ -948,7 +948,7 @@ function kingCheck(temp, p) {
 }
 
 function kingThreat() {
-    const temp = players[whosTurn(false)].pieces.find(x => x.name == "king").pos;
+    const temp = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
     const temp2 = [];
     players[whosTurn(true)].pieces.forEach(item => {
         if (includesCoor(temp, item.move(false), true)) {
