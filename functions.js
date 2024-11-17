@@ -738,7 +738,7 @@ function endTurn() {
         createGameInfo("Draw because the game is boring");
         lock = true;
     }
-    if (Math.max(...players.map(i => i.pieces.filter(x => x.name === "pawn").length)) === 0) {
+    if (players.map(i => i.pieces.filter(x => x.name === "pawn").length).reduce((a, b) => a + b) === 0) {
         if (Math.max(...players.map(i => i.pieces.map(x => x.points).reduce((a, x) => a + x))) < 6) {
             createGameInfo("Draw: Checkmate aint possible");
             lock = true;
