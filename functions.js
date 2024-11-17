@@ -730,12 +730,9 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
-    const temp = [];
+    const temp = flatten(players[whosTurn(false)].pieces.map(i => i.move(true))).length;
     const temp2 = moveHistory.at(-1);
     let notify = false;
-    players[whosTurn(false)].pieces.forEach(item => {
-        temp.push(item.move(true));
-    });
     clearMoveSet();
     console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
     if (moveHistory.length - lastAction === 50) {
@@ -749,12 +746,12 @@ function endTurn() {
         }
     }
     if (kingThreat().length === 0) {
-        if (flatten(temp).length === 0) {
+        if (temp === 0) {
             createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
             notify = true;
         }
     } else {
-        if (flatten(temp).length === 0) {
+        if (temp === 0) {
             createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
         } else {
             createGameInfo(`Check`);
@@ -894,19 +891,7 @@ function flatten(temp) {
 }
 
 function getPiecesPos(x) {
-    const temp = [];
-    if (x === -1) {
-        players.forEach(i => {
-            i.pieces.forEach(item => {
-                temp.push(item.pos);
-            });
-        });
-    } else {
-        players[x].pieces.forEach(i => {
-            temp.push(i.pos);
-        });
-    }
-    return temp;
+    return x === -1 ? flatten(players.map(i => i.pieces.map(x => x.pos))) : players[x].pieces.map(i => i.pos);
 }
 
 function straightLiners(opp) {
@@ -934,10 +919,7 @@ function kingCheck(temp, p) {
         return [];
     }
     if (temp4.length === 1) {
-        const temp5 = [];
-        straightLiners(true).forEach(item => {
-            temp5.push(item.pos);
-        });
+        const temp5 = straightLiners(true).map(i => i.pos);
         if (includesCoor(temp4[0], temp5, true)) {
             const temp6 = posCheck(temp2, temp4[0]);
             return coorFilter(temp3, lineCheck(temp2.x, temp2.y, temp6.x, temp6.y), true);
@@ -974,11 +956,7 @@ function straightLinersCheck(temp, p, k) {
 }
 
 function getEnemyGrid() {
-    const temp = [];
-    players[whosTurn(true)].pieces.forEach(item => {
-        temp.push(item.move(false));
-    });
-    return flatten(temp);
+    return flatten(players[whosTurn(true)].pieces.map(i => i.move(false)));
 }
 
 function ghostCheck(pos, ghost) {
