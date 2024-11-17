@@ -730,9 +730,11 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
-    clearMoveSet();
     const temp = [];
+    const temp2 = moveHistory.at(-1);
     let notify = false;
+    clearMoveSet();
+    console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
     players[whosTurn(false)].pieces.forEach(item => {
         temp.push(item.move(true));
     });
@@ -759,8 +761,6 @@ function endTurn() {
         }
         notify = true;
     }
-    const temp2 = moveHistory.at(-1);
-    console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
     if (!notify && !lock) {
         botMove();
     }
