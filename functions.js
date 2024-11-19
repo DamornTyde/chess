@@ -365,7 +365,7 @@ class king extends piece {
     }
     move(check, ghost) {
         const place = ghostCheck(this.pos, ghost);
-        let temp = flatten(royalCheck(place.x, place.y, 0, false));
+        let temp = royalCheck(place.x, place.y, 0, false).flat(3);
         if (check) {
             const temp2 = getEnemyGrid();
             const temp3 = straightLiners(true);
@@ -375,7 +375,7 @@ class king extends piece {
                     temp2.push(new coor(place.x - temp4.x, place.y - temp4.y));
                 }
             }
-            temp = coorFilter(temp, flatten(temp2), false);
+            temp = coorFilter(temp, temp2, false);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -388,7 +388,7 @@ class queen extends piece {
     }
     move(check, ghost) {
         const place = ghostCheck(this.pos, ghost);
-        let temp = flatten(royalCheck(place.x, place.y, 0, true));
+        let temp = royalCheck(place.x, place.y, 0, true).flat(3);
         if (check) {
             temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
@@ -408,7 +408,7 @@ class rook extends piece {
             temp.push(lineCheck(place.x, place.y, i, 0));
             temp.push(lineCheck(place.x, place.y, 0, i));
         }
-        temp = flatten(temp);
+        temp = temp.flat();
         if (check) {
             temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
@@ -429,7 +429,7 @@ class bishop extends piece {
                 temp.push(lineCheck(place.x, place.y, i, i2));
             }
         }
-        temp = flatten(temp);
+        temp = temp.flat();
         if (check) {
             temp = kingCheck(temp, place);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
@@ -670,7 +670,7 @@ function input(temp, promotion) {
                 }
             }
         }
-    } else if (includesCoor(temp, flatten(moveTile), true)) {
+    } else if (includesCoor(temp, moveTile.flat(), true)) {
         moveHistory.push(new move(slct.name, slct.pos, temp));
         if (slct.name === "pawn") {
             lastAction = moveHistory.length -1;
@@ -729,7 +729,7 @@ function input(temp, promotion) {
 }
 
 function endTurn() {
-    const temp = flatten(players[whosTurn(false)].pieces.map(i => i.move(true))).length === 0;
+    const temp = players[whosTurn(false)].pieces.map(i => i.move(true)).flat().length === 0;
     const temp2 = moveHistory.at(-1);
     let notify = false;
     clearMoveSet();
@@ -798,7 +798,7 @@ function setBot() {
 
 document.getElementById("game").addEventListener("mousemove", function (e) {
     const item = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
-    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, flatten(moveTile), true) || includesCoor(item, castleMove, true)) {
+    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, moveTile.flat(), true) || includesCoor(item, castleMove, true)) {
         msPlc = item;
     } else {
         msPlc = undefined;
@@ -877,20 +877,8 @@ function isCoor(c, x, y) {
     return c.x === x && c.y === y;
 }
 
-function flatten(temp) {
-    const temp2 = [];
-    temp.forEach(function deeper(item) {
-        if (Array.isArray(item)) {
-            item.forEach(deeper);
-        } else {
-            temp2.push(item);
-        }
-    });
-    return temp2;
-}
-
 function getPiecesPos(x) {
-    return x === -1 ? flatten(players.map(i => i.pieces.map(x => x.pos))) : players[x].pieces.map(i => i.pos);
+    return x === -1 ? players.map(i => i.pieces.map(x => x.pos)).flat() : players[x].pieces.map(i => i.pos);
 }
 
 function straightLiners(opp) {
@@ -939,9 +927,8 @@ function straightLinersCheck(temp, p, k) {
             const temp2 = posCheck(p, item.pos);
             const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
             if (temp3.length > 0 && isCoor(temp3.at(-1), k.x, k.y)) {
-                console.log("test");
                 temp3.push(lineCheck(p.x, p.y, temp2.x, temp2.y));
-                temp = coorFilter(temp, flatten(temp3), true);
+                temp = coorFilter(temp, temp3.flat(), true);
             }
         }
     });
@@ -949,7 +936,7 @@ function straightLinersCheck(temp, p, k) {
 }
 
 function getEnemyGrid() {
-    return flatten(players[whosTurn(true)].pieces.map(i => i.move(false)));
+    return players[whosTurn(true)].pieces.map(i => i.move(false)).flat();
 }
 
 function ghostCheck(pos, ghost) {
@@ -1012,7 +999,7 @@ function createGameInfo(content) {
     const temp = document.createElement("div");
     temp.appendChild(document.createTextNode(content));
     body.appendChild(createInfo(temp, () => document.getElementById("dark").remove()));
-    delay(() => clickOk(), 5);
+    setTimeout(() => clickOk(), 5000);
 }
 
 function botInfo() {
@@ -1036,28 +1023,18 @@ function botInfo() {
 //bot
 function bot() {
     const promotions = ["Queen", "Knight", "Rook", "Bishop"];
-    const moves = [];
-    const turn = whosTurn(false);
-    players[turn].pieces.forEach(item => {
-        flatten(item.move(true)).forEach(item2 => {
-            moves.push(new movement(item.pos, item2));
-        });
-    });
-    delay(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 0.75);
+    const moves = players[whosTurn(false)].pieces.map(i => i.move(true).flat().map(x => new movement(i.pos, x))).flat();
+    setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
 }
 
 function botSelect(action, promotion) {
     input(action.from);
-    delay(() => input(action.to, promotion), 0.25);
-}
-
-function delay(callback, time) {
-    setTimeout(callback, (time * 1000));
+    setTimeout(() => input(action.to, promotion), 250);
 }
 
 function clickOk() {
     const ok = document.querySelector("#ok");
-    if (ok != undefined) {
+    if (ok !== undefined) {
         ok.click();
     }
     botMove();
