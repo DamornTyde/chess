@@ -946,12 +946,6 @@ function ghostCheck(pos, ghost) {
     return pos;
 }
 
-function botMove() {
-    if (botPlayers.includes(whosTurn(false))) {
-        bot();
-    }
-}
-
 //templating
 function createInfo(content, onClicked) {
     const info = document.createElement("div");
@@ -1021,6 +1015,12 @@ function botInfo() {
 }
 
 //bot
+function botMove() {
+    if (botPlayers.includes(whosTurn(false))) {
+        bot();
+    }
+}
+
 function bot() {
     const promotions = ["Queen", "Knight", "Rook", "Bishop"];
     const moves = players[whosTurn(false)].pieces.map(i => i.move(true).flat().map(x => new movement(i.pos, x))).flat();
