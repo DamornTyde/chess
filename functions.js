@@ -348,7 +348,7 @@ class piece {
     moveCheck() {
         for (let i = this.history.length - 1; i > 0; i--) {
             const a = this.history[i - 1].from;
-            if (!isCoor(this.history[i].to, a.x, a.y)) {
+            if (!isCoor(this.history[i].to, a)) {
                 return false;
             }
             if (this.history.length - i === 4) {
@@ -492,7 +492,7 @@ class pawn extends piece {
                 if (includesCoor(temp3, temp2, true)) {
                     temp[1].push(temp3);
                 } else {
-                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3.x, place.y));
+                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, temp3));
                     if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) {
                         temp[1].push(temp3);
                     }
@@ -658,13 +658,13 @@ document.getElementById("game").addEventListener("click", function (e) {
 function input(temp, promotion) {
     if (includesCoor(temp, getPiecesPos(whosTurn(false)), true) && !lock) {
         castleMove = [];
-        slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp.x, temp.y));
+        slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp));
         moveTile = slct.move(true);
         if (slct.name === "king" && slct.start) {
             for (let i = -1; i < 2; i += 2) {
                 const temp2 = lineCheck(slct.pos.x, slct.pos.y, i, 0);
                 const temp3 = temp2.at(-1);
-                const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
+                const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
                 if (temp4 != undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getEnemyGrid(), false).length === 3) {
                     castleMove.push(temp2.at(1));
                 }
@@ -674,22 +674,22 @@ function input(temp, promotion) {
         moveHistory.push(new move(slct.name, slct.pos, temp));
         if (slct.name === "pawn") {
             lastAction = moveHistory.length -1;
-            if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp.x, temp.y)) {
+            if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp)) {
                 slct.enPassant = moveHistory.length;
             } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
-                const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y - slct.frwrd));
+                const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, new coor(temp.x, temp.y - slct.frwrd)));
                 players[whosTurn(false)].pieces.splice(temp3, 1);
                 moveHistory.at(-1).note = "-pawn";
             }
         }
         if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
             lastAction = moveHistory.length -1;
-            const temp2 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp.x, temp.y));
+            const temp2 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp));
             moveHistory.at(-1).note = `-${players[whosTurn(false)].pieces[temp2].name}`;
             players[whosTurn(false)].pieces.splice(temp2, 1);
         }
         if (slct.name === "pawn" && (temp.y === 0 || temp.y === 7)) {
-            const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos.x, slct.pos.y));
+            const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos));
             players[whosTurn(true)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
             if (promotion != undefined) {
@@ -715,7 +715,7 @@ function input(temp, promotion) {
     } else if (includesCoor(temp, castleMove, true)) {
         const temp2 = subCheck(slct.pos.x, temp.x);
         const temp3 = lineCheck(temp.x, temp.y, temp2, 0).at(-1);
-        const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3.x, temp3.y));
+        const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
         moveHistory.push(new move(slct.name, slct.pos, temp));
         moveHistory.at(-1).note = "castle";
         slct.start = false;
@@ -869,12 +869,12 @@ function coorFilter(temp, temp2, incl) {
 }
 
 function includesCoor(item, temp, incl) {
-    const test = temp.findIndex(i => isCoor(item, i.x, i.y));
+    const test = temp.findIndex(i => isCoor(item, i));
     return incl ? test > -1 : test === -1;
 }
 
-function isCoor(c, x, y) {
-    return c.x === x && c.y === y;
+function isCoor(a, b) {
+    return a.x === b.x && a.y === b.y;
 }
 
 function getPiecesPos(x) {
@@ -926,7 +926,7 @@ function straightLinersCheck(temp, p, k) {
         if (includesCoor(p, item.move(false), true)) {
             const temp2 = posCheck(p, item.pos);
             const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
-            if (temp3.length > 0 && isCoor(temp3.at(-1), k.x, k.y)) {
+            if (temp3.length > 0 && isCoor(temp3.at(-1), k)) {
                 temp3.push(lineCheck(p.x, p.y, temp2.x, temp2.y));
                 temp = coorFilter(temp, temp3.flat(), true);
             }
