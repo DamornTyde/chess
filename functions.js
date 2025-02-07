@@ -11,6 +11,7 @@ const kingAsset = [];
 const pawnAsset = [];
 const body = document.body;
 const html = document.documentElement;
+const promotions = ["Queen", "Knight", "Rook", "Bishop"];
 
 let players = [];
 let grid;
@@ -954,7 +955,7 @@ function createInfo(content, onClicked) {
 function promoteInfo(x, y) {
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
-    ["Queen", "Knight", "Rook", "Bishop"].forEach(item => {
+    promotions.forEach(item => {
         temp.appendChild(new Option(item));
     });
     const temp2 = document.createElement("div");
@@ -1010,7 +1011,6 @@ function botMove() {
 }
 
 function bot() {
-    const promotions = ["Queen", "Knight", "Rook", "Bishop"];
     const moves = players[whosTurn(false)].pieces.map(i => i.move(true).flat().map(x => new movement(i.pos, x))).flat();
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
 }
