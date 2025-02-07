@@ -363,8 +363,7 @@ class king extends piece {
     constructor(pos, asset) {
         super("king", 0, pos, asset);
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp = royalCheck(place.x, place.y, 0, false).flat(3);
         if (check) {
             const temp2 = getEnemyGrid();
@@ -386,8 +385,7 @@ class queen extends piece {
     constructor(pos, asset) {
         super("queen", 9, pos, asset);
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp = royalCheck(place.x, place.y, 0, true).flat(3);
         if (check) {
             temp = kingCheck(temp, place);
@@ -401,8 +399,7 @@ class rook extends piece {
     constructor(pos, asset) {
         super("rook", 5, pos, asset);
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             temp.push(lineCheck(place.x, place.y, i, 0));
@@ -421,8 +418,7 @@ class bishop extends piece {
     constructor(pos, asset) {
         super("bishop", 3, pos, asset);
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -1; i2 < 2; i2 += 2) {
@@ -442,8 +438,7 @@ class knight extends piece {
     constructor(pos, asset) {
         super("knight", 3, pos, asset);
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -2; i2 < 3; i2 += 4) {
@@ -469,8 +464,7 @@ class pawn extends piece {
         this.frwrd = frwrd;
         this.enPassant = -1;
     }
-    move(check, ghost) {
-        const place = ghostCheck(this.pos, ghost);
+    move(check, place = this.pos) {
         let temp;
         if (check) {
             temp = [
@@ -519,9 +513,10 @@ class coor {
 }
 
 class movement {
-    constructor(from, to) {
+    constructor(from, to, points = 0) {
         this.from = from;
         this.to = to;
+        this.points = points;
     }
 }
 
@@ -937,13 +932,6 @@ function straightLinersCheck(temp, p, k) {
 
 function getEnemyGrid() {
     return players[whosTurn(true)].pieces.map(i => i.move(false)).flat();
-}
-
-function ghostCheck(pos, ghost) {
-    if (ghost != undefined) {
-        return ghost;
-    }
-    return pos;
 }
 
 //templating
