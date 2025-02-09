@@ -822,9 +822,9 @@ function rangeCheck(i) {
     return i > -1 && i < 8;
 }
 
-function lineCheck(x, y, xM, yM) {
+function lineCheck(x, y, xM, yM, ghost = new coor(x, y)) {
     const temp = [];
-    const temp2 = getPiecesPos(-1);
+    const temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
     for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
         const temp3 = new coor(x + xM * i, y + yM * i);
         if (coorCheck(temp3.x, temp3.y)) {
