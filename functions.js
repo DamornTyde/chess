@@ -874,7 +874,7 @@ function isCoor(a, b) {
 }
 
 function getPiecesPos(x) {
-    return x === -1 ? players.map(i => i.pieces.map(x => x.pos)).flat() : players[x].pieces.map(i => i.pos);
+    return x === -1 ? players.map(i => i.pieces.map(y => y.pos)).flat() : players[x].pieces.map(i => i.pos);
 }
 
 function straightLiners(opp) {
@@ -886,11 +886,8 @@ function posCheck(a, b) {
 }
 
 function subCheck(a, b) {
-    if (a < b) {
-        return 1;
-    } else if (a > b) {
-        return -1;
-    }
+    if (a < b) return 1;
+    else if (a > b) return -1;
     return 0;
 }
 
