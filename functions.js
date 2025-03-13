@@ -514,10 +514,9 @@ class coor {
 }
 
 class movement {
-    constructor(from, to, points = 0) {
+    constructor(from, to) {
         this.from = from;
         this.to = to;
-        this.points = points;
     }
 }
 
