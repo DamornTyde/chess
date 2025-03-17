@@ -850,10 +850,9 @@ function royalExend(pos, move, p, ghost) {
     if (p) {
         return lineCheck(pos, move, ghost);
     } else {
-        const x = pos.x + move.x;
-        const y = pos.y + move.y;
-        if (coorCheck(x, y)) {
-            return new coor(x, y);
+        const temp = new coor(pos.x + move.x, pos.y + move.y);
+        if (coorCheck(temp.x, temp.y)) {
+            return temp;
         } else {
             return [];
         }
