@@ -1014,7 +1014,7 @@ function bot() {
         const enemyAttack = getAttackGrid(i.pos);
         const ownAttack = getAttackGrid(i.pos, false);
         const base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack) - getPositionPoints(i.pos, ownAttack) -
-            getBasePoints(pieceGrid, enemy) - getBasePoints(pieceGrid, own);
+            getBasePoints(pieceGrid, enemy) - getBasePoints(pieceGrid, own) + getPositionPoints(i.pos, enemyAttack);
         const pieceMoves = pieceGrid.map(x => new movement(i.pos, x));
         for (let m of pieceMoves) {
             //
