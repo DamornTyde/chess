@@ -1013,8 +1013,8 @@ function bot() {
         const pieceGrid = i.move(true).flat();
         const enemyAttack = getAttackGrid(i.pos);
         const ownAttack = getAttackGrid(i.pos, false);
-        const base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack) - getPositionPoints(i.pos, ownAttack) -
-            getBasePoints(pieceGrid, enemy) - getBasePoints(pieceGrid, own) + getPositionPoints(i.pos, enemyAttack);
+        const base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack) - getPositionPoints(i, ownAttack) -
+            getBasePoints(pieceGrid, enemy) - getBasePoints(pieceGrid, own) + getPositionPoints(i, enemyAttack);
         const pieceMoves = pieceGrid.map(x => new movement(i.pos, x));
         for (let m of pieceMoves) {
             //
