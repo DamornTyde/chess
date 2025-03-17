@@ -364,17 +364,10 @@ class king extends piece {
     constructor(pos, asset) {
         super("king", 0, pos, asset);
     }
-    move(check, place = this.pos) {
-        let temp = royalCheck(place.x, place.y, 0, false).flat(3);
+    move(check) {
+        let temp = royalCheck(pos, false).flat(3);
         if (check) {
-            const temp2 = getEnemyGrid();
-            const temp3 = straightLiners(true);
-            for (let i of temp3) {
-                if (includesCoor(place, i.move(false), true)) {
-                    const temp4 = posCheck(place, i.pos);
-                    temp2.push(new coor(place.x - temp4.x, place.y - temp4.y));
-                }
-            }
+            const temp2 = getAttackGrid(this.pos);
             temp = coorFilter(temp, temp2, false);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
@@ -386,10 +379,10 @@ class queen extends piece {
     constructor(pos, asset) {
         super("queen", 9, pos, asset);
     }
-    move(check, place = this.pos) {
-        let temp = royalCheck(place.x, place.y, 0, true).flat(3);
+    move(check, ghost = this.pos) {
+        let temp = royalCheck(this.pos, true, ghost).flat(3);
         if (check) {
-            temp = kingCheck(temp, place);
+            kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -400,15 +393,15 @@ class rook extends piece {
     constructor(pos, asset) {
         super("rook", 5, pos, asset);
     }
-    move(check, place = this.pos) {
+    move(check, ghost = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
-            temp.push(lineCheck(place.x, place.y, i, 0));
-            temp.push(lineCheck(place.x, place.y, 0, i));
+            temp.push(lineCheck(this.pos, new coor(i, 0), ghost));
+            temp.push(lineCheck(this.pos, new coor(0, i), ghost));
         }
         temp = temp.flat();
         if (check) {
-            temp = kingCheck(temp, place);
+            kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -419,16 +412,16 @@ class bishop extends piece {
     constructor(pos, asset) {
         super("bishop", 3, pos, asset);
     }
-    move(check, place = this.pos) {
+    move(check, ghost = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -1; i2 < 2; i2 += 2) {
-                temp.push(lineCheck(place.x, place.y, i, i2));
+                temp.push(lineCheck(this.pos, new coor(i, i2), ghost));
             }
         }
         temp = temp.flat();
         if (check) {
-            temp = kingCheck(temp, place);
+            kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -439,20 +432,26 @@ class knight extends piece {
     constructor(pos, asset) {
         super("knight", 3, pos, asset);
     }
-    move(check, place = this.pos) {
+    move(check) {
         let temp = [];
+        let x;
+        let y;
         for (let i = -1; i < 2; i += 2) {
             for (let i2 = -2; i2 < 3; i2 += 4) {
-                if (coorCheck(place.x + i, place.y + i2)) {
-                    temp.push(new coor(place.x + i, place.y + i2));
+                x = this.pos.x + i;
+                y = this.pos.y + i2;
+                if (coorCheck(x, y)) {
+                    temp.push(new coor(x, y));
                 }
-                if (coorCheck(place.x + i2, place.y + i)) {
-                    temp.push(new coor(place.x + i2, place.y + i));
+                x = this.pos.x + i2;
+                y = this.pos.y + i
+                if (coorCheck(x, y)) {
+                    temp.push(new coor(x, y));
                 }
             }
         }
         if (check) {
-            temp = kingCheck(temp, place);
+            kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -465,7 +464,7 @@ class pawn extends piece {
         this.frwrd = frwrd;
         this.enPassant = -1;
     }
-    move(check, place = this.pos) {
+    move(check) {
         let temp;
         if (check) {
             temp = [
@@ -473,17 +472,17 @@ class pawn extends piece {
                 []
             ];
             let temp2 = getPiecesPos(-1);
-            let temp3 = new coor(place.x, place.y + this.frwrd);
+            let temp3 = new coor(this.pos.x, this.pos.y + this.frwrd);
             if (includesCoor(temp3, temp2, false)) {
                 temp[0].push(temp3);
-                temp3 = new coor(place.x, place.y + this.frwrd * 2)
+                temp3 = new coor(this.pos.x, this.pos.y + this.frwrd * 2)
                 if (this.start && includesCoor(temp3, temp2, false)) {
                     temp[0].push(temp3);
                 }
             }
             temp2 = getPiecesPos(whosTurn(true));
             for (let i = -1; i < 2; i += 2) {
-                temp3 = new coor(place.x + i, place.y + this.frwrd);
+                temp3 = new coor(this.pos.x + i, this.pos.y + this.frwrd);
                 if (includesCoor(temp3, temp2, true)) {
                     temp[1].push(temp3);
                 } else {
@@ -494,12 +493,12 @@ class pawn extends piece {
                 }
             }
             for (let i = 0; i < temp.length; i++) {
-                temp[i] = kingCheck(temp[i], place);
+                kingCheck(temp[i], this.pos);
             }
         } else {
             temp = [];
             for (let i = -1; i < 2; i += 2) {
-                temp.push(new coor(place.x + i, place.y + this.frwrd));
+                temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
             }
         }
         return temp;
@@ -657,10 +656,10 @@ function input(temp, promotion) {
         moveTile = slct.move(true);
         if (slct.name === "king" && slct.start) {
             for (let i = -1; i < 2; i += 2) {
-                const temp2 = lineCheck(slct.pos.x, slct.pos.y, i, 0);
+                const temp2 = lineCheck(slct.pos, new coor(i, 0));
                 const temp3 = temp2.at(-1);
                 const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
-                if (temp4 != undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getEnemyGrid(), false).length === 3) {
+                if (temp4 != undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getAttackGrid(temp4.pos), false).length === 3) {
                     castleMove.push(temp2.at(1));
                 }
             }
@@ -709,7 +708,7 @@ function input(temp, promotion) {
         endTurn();
     } else if (includesCoor(temp, castleMove, true)) {
         const temp2 = subCheck(slct.pos.x, temp.x);
-        const temp3 = lineCheck(temp.x, temp.y, temp2, 0).at(-1);
+        const temp3 = lineCheck(temp, new coor(temp2, 0)).at(-1);
         const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
         moveHistory.push(new move(slct.name, slct.pos, temp));
         moveHistory.at(-1).note = "castle";
@@ -821,11 +820,11 @@ function rangeCheck(i) {
     return i > -1 && i < 8;
 }
 
-function lineCheck(x, y, xM, yM, ghost = new coor(x, y)) {
+function lineCheck(pos, move, ghost = pos) {
     const temp = [];
     const temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
     for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
-        const temp3 = new coor(x + xM * i, y + yM * i);
+        const temp3 = new coor(pos.x + move.x * i, pos.y + move.y * i);
         if (coorCheck(temp3.x, temp3.y)) {
             temp.push(temp3);
         } else {
@@ -835,24 +834,26 @@ function lineCheck(x, y, xM, yM, ghost = new coor(x, y)) {
     return temp;
 }
 
-function royalCheck(x, y, r, p) {
+function royalCheck(pos, p, ghost = pos, r = 0) {
     const temp = [];
     for (let i = -1; i < 2; i += 2) {
-        temp.push(royalExend(x, y, r, i, p));
+        temp.push(royalExend(pos, new coor(r, i), p, ghost));
         if (r === 0) {
-            temp.push(royalExend(x, y, i, r, p));
-            temp.push(royalCheck(x, y, i, p));
+            temp.push(royalExend(pos, new coor(i, r), p, ghost));
+            temp.push(royalCheck(pos, p, ghost, i));
         }
     }
     return temp;
 }
 
-function royalExend(x, y, xM, yM, p) {
+function royalExend(pos, move, p, ghost) {
     if (p) {
-        return lineCheck(x, y, xM, yM);
+        return lineCheck(pos, move, ghost);
     } else {
-        if (coorCheck(x + xM, y + yM)) {
-            return new coor(x + xM, y + yM);
+        const x = pos.x + move.x;
+        const y = pos.y + move.y;
+        if (coorCheck(x, y)) {
+            return new coor(x, y);
         } else {
             return [];
         }
@@ -876,8 +877,9 @@ function getPiecesPos(x) {
     return x === -1 ? players.map(i => i.pieces.map(y => y.pos)).flat() : players[x].pieces.map(i => i.pos);
 }
 
-function straightLiners(opp) {
-    return players[whosTurn(opp)].pieces.filter(x => ["queen", "rook", "bishop"].includes(x.name));
+function straightLiners(opp, inc = true) {
+    const check = ["queen", "rook", "bishop"]
+    return players[whosTurn(opp)].pieces.filter(x => inc ? check.includes(x.name): !check.includes(x.name));
 }
 
 function posCheck(a, b) {
@@ -891,21 +893,20 @@ function subCheck(a, b) {
 }
 
 function kingCheck(temp, p) {
-    const temp2 = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
-    const temp3 = straightLinersCheck(temp, p, temp2);
-    const temp4 = kingThreat();
-    if (temp4.length > 1) {
+    const k = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
+    temp = straightLinersCheck(temp, p, k);
+    const threat = kingThreat();
+    if (threat.length > 1) {
         return [];
     }
-    if (temp4.length === 1) {
-        const temp5 = straightLiners(true).map(i => i.pos);
-        if (includesCoor(temp4[0], temp5, true)) {
-            const temp6 = posCheck(temp2, temp4[0]);
-            return coorFilter(temp3, lineCheck(temp2.x, temp2.y, temp6.x, temp6.y), true);
+    if (threat.length === 1) {
+        const check = straightLiners(true).map(i => i.pos);
+        if (includesCoor(threat[0], check, true)) {
+            const fltr = posCheck(k, threat[0]);
+            return coorFilter(temp, lineCheck(k, fltr), true);
         }
-        return coorFilter(temp4, temp3, true);
+        return coorFilter(threat, temp, true);
     }
-    return temp3;
 }
 
 function kingThreat() {
@@ -916,19 +917,17 @@ function kingThreat() {
 function straightLinersCheck(temp, p, k) {
     straightLiners(true).forEach(item => {
         if (includesCoor(p, item.move(false), true)) {
-            const temp2 = posCheck(p, item.pos);
-            const temp3 = lineCheck(p.x, p.y, -temp2.x, -temp2.y);
-            if (temp3.length > 0 && isCoor(temp3.at(-1), k)) {
-                temp3.push(lineCheck(p.x, p.y, temp2.x, temp2.y));
-                temp = coorFilter(temp, temp3.flat(), true);
+            const check = lineCheck(item, posCheck(item.pos, p), p);
+            if (isCoor(check.at(-1), k)) {
+                temp = coorFilter(temp, check, true);
+                return;
             }
         }
     });
-    return temp;
 }
 
-function getEnemyGrid() {
-    return players[whosTurn(true)].pieces.map(i => i.move(false)).flat();
+function getAttackGrid(ghost, opp = true) {
+    return [straightLiners(opp).move(false, ghost), straightLiners(opp, false).move(false)].flat();
 }
 
 //templating
@@ -1007,8 +1006,28 @@ function botMove() {
 }
 
 function bot() {
-    const moves = players[whosTurn(false)].pieces.map(i => i.move(true).flat().map(x => new movement(i.pos, x))).flat();
+    const moves = [];
+    const enemy = players[whosTurn(true)].pieces;
+    const own = players[whosTurn(false)].pieces;
+    const playerPieces = players[whosTurn(false)].pieces;
+    for (let i of playerPieces) {
+        const enemyAttack = getAttackGrid(i.pos);
+        const ownAttack = getAttackGrid(i.pos, false);
+        let base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack);
+        const pieceMoves = i.move(true).flat().map(x => new movement(i.pos, x));
+        for (let m of pieceMoves) {
+            //
+        }
+    }
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
+}
+
+function getBasePoints(p, attack) {
+    return p.map(i => getPositionPoints(i, attack)).reduce((a, b) => a + b);
+}
+
+function getPositionPoints(i, attack) {
+    return i.points * coorFilter(attack, [i.pos], true).length;
 }
 
 function botSelect(action, promotion) {
