@@ -1010,12 +1010,12 @@ function bot() {
     const own = players[whosTurn(false)].pieces;
     const playerPieces = players[whosTurn(false)].pieces;
     for (let i of playerPieces) {
-        const pieceAttack = i.move(true).flat();
+        const pieceAttack = i.move(false).flat();
         const enemyAttack = getAttackGrid(i.pos);
         const ownAttack = getAttackGrid(i.pos, false);
         const base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack) - getPositionPoints(i, ownAttack) -
             getBasePoints(pieceAttack, enemy) - getBasePoints(pieceAttack, own) + getPositionPoints(i, enemyAttack);
-        const pieceMoves = pieceAttack.map(x => new movement(i.pos, x));
+        const pieceMoves = i.move(true).flat().map(x => new movement(i.pos, x));
         for (let m of pieceMoves) {
             //
         }
