@@ -383,7 +383,7 @@ class queen extends piece {
     move(check, ghost = this.pos) {
         let temp = royalCheck(this.pos, true, ghost).flat(3);
         if (check) {
-            kingCheck(temp, this.pos);
+            temp = kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -402,7 +402,7 @@ class rook extends piece {
         }
         temp = temp.flat();
         if (check) {
-            kingCheck(temp, this.pos);
+            temp = kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -422,7 +422,7 @@ class bishop extends piece {
         }
         temp = temp.flat();
         if (check) {
-            kingCheck(temp, this.pos);
+            temp = kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -452,7 +452,7 @@ class knight extends piece {
             }
         }
         if (check) {
-            kingCheck(temp, this.pos);
+            temp = kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
         }
         return temp;
@@ -493,8 +493,8 @@ class pawn extends piece {
                     }
                 }
             }
-            for (let i = 0; i < temp.length; i++) {
-                kingCheck(temp[i], this.pos);
+            for (let i of temp) {
+                i = kingCheck(i, this.pos);
             }
         } else {
             temp = [];
@@ -808,6 +808,11 @@ function clearMoveSet() {
     castleMove = [];
 }
 
+function okClicked() {
+    document.getElementById("dark").remove()
+    botMove();
+}
+
 //checks
 function whosTurn(opp) {
     return (moveHistory.length + (opp ? 1 : 0)) % 2;
@@ -901,11 +906,12 @@ function kingCheck(temp, p) {
     if (threat.length === 1) {
         const check = straightLiners(true).map(i => i.pos);
         if (includesCoor(threat[0], check, true)) {
-            const fltr = posCheck(k, threat[0]);
-            return coorFilter(temp, lineCheck(k, fltr), true);
+            const fltr = lineCheck(k, posCheck(k, threat[0]));
+            return coorFilter(temp, fltr, true);
         }
         return coorFilter(threat, temp, true);
     }
+    return temp;
 }
 
 function kingThreat() {
@@ -916,13 +922,14 @@ function kingThreat() {
 function straightLinersCheck(temp, p, k) {
     straightLiners(true).forEach(item => {
         if (includesCoor(p, item.move(false), true)) {
-            const check = lineCheck(item, posCheck(item.pos, p), p);
+            const check = lineCheck(item, posCheck(p, item.pos), p);
             if (check.length > 0 && isCoor(check.at(-1), k)) {
-                temp = coorFilter(temp, check, true);
-                return;
+                check.push(item.pos);
+                return coorFilter(temp, check, true);
             }
         }
     });
+    return temp;
 }
 
 function getAttackGrid(ghost, opp = true) {
@@ -975,8 +982,7 @@ function createCanvas(w, h) {
 function createGameInfo(content) {
     const temp = document.createElement("div");
     temp.appendChild(document.createTextNode(content));
-    body.appendChild(createInfo(temp, () => document.getElementById("dark").remove()));
-    setTimeout(() => clickOk(), 5000);
+    body.appendChild(createInfo(temp, () => okClicked()));
 }
 
 function botInfo() {
@@ -1026,7 +1032,7 @@ function bot() {
                 cloneAttack = clone.move(false);
             }
             const points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(own, cloneAttack) - getPositionPoints(i, cloneAttack) - 
-                getPositionPoints(clone, enemyAttack) + getPositionPoints(clone, ownAttack) + getCapturePoints(clone.pos);
+                getPositionPoints(clone, enemyAttack) + getPositionPoints(clone, ownAttack) + getCapturePoints(clone.pos, enemy, own);
             m.points = points;
             if (moves.length === 0 || moves[0].points === points) {
                 moves.push(m);
@@ -1042,27 +1048,20 @@ function getBasePoints(p, attack) {
     return p.map(i => getPositionPoints(i, attack)).reduce((a, b) => a + b);
 }
 
-function getCapturePoints(pos) {
-    const enemy = players[whosTurn(true)].pieces.find(i => isCoor(i.pos, pos));
-    if (enemy === undefined) {
-        return 0;
-    }
-    return enemy.points;
-}
-
 function getPositionPoints(i, attack) {
     return i.points * coorFilter(attack, [i.pos], true).length;
+}
+
+function getCapturePoints(pos, enemy, own) {
+    const capture = players[whosTurn(true)].pieces.find(i => isCoor(i.pos, pos));
+    if (capture === undefined) {
+        return 0;
+    }
+    const captureAtack = capture.move(false);
+    return capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(own, captureAtack);
 }
 
 function botSelect(action, promotion) {
     input(action.from);
     setTimeout(() => input(action.to, promotion), 250);
-}
-
-function clickOk() {
-    const ok = document.querySelector("#ok");
-    if (ok !== undefined) {
-        ok.click();
-    }
-    botMove();
 }
