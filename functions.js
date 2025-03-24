@@ -660,7 +660,7 @@ function input(temp, promotion) {
                 const temp2 = lineCheck(slct.pos, new coor(i, 0));
                 const temp3 = temp2.at(-1);
                 const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
-                if (temp4 != undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getAttackGrid(temp4.pos), false).length === 3) {
+                if (temp4 !== undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getAttackGrid(temp4.pos), false).length === 3) {
                     castleMove.push(temp2.at(1));
                 }
             }
