@@ -3,12 +3,7 @@ const ctx = canvas.getContext("2d");
 const menu = document.getElementById("menu");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
-const rookAsset = [];
-const knightAsset = [];
-const bishopAsset = [];
-const queenAsset = [];
-const kingAsset = [];
-const pawnAsset = [];
+const assets = Array(6).fill().map(() => Array(2));
 const body = document.body;
 const html = document.documentElement;
 const promotions = ["Queen", "Knight", "Rook", "Bishop"];
@@ -51,27 +46,10 @@ function rescaling() {
     scaling();
     drawAssets();
     players.forEach((item, i) => {
-        item.pieces.forEach(item2 => {
-            switch (item2.name) {
-                case "king":
-                    item2.asset = kingAsset[i];
-                    break;
-                case "queen":
-                    item2.asset = queenAsset[i];
-                    break;
-                case "rook":
-                    item2.asset = rookAsset[i];
-                    break;
-                case "knight":
-                    item2.asset = knightAsset[i];
-                    break;
-                case "bishop":
-                    item2.asset = bishopAsset[i];
-                    break;
-                case "pawn":
-                    item2.asset = pawnAsset[i];
-            }
-        });
+        for (let item2 of item.pieces) {
+            const i2 = ["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name);
+            item2.asset = assets[i2][i];
+        };
     });
     drawGame();
 }
@@ -124,18 +102,18 @@ function drawAssets() {
         brdCtx.fillText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
         brdCtx.fillText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
-    rookAsset[0] = drawRook("#fff", "#000");
-    rookAsset[1] = drawRook("#000", "#fff");
-    knightAsset[0] = drawKnight("#fff", "#000");
-    knightAsset[1] = drawKnight("#000", "#fff");
-    bishopAsset[0] = drawBishop("#fff", "#000");
-    bishopAsset[1] = drawBishop("#000", "#fff");
-    queenAsset[0] = drawQueen("#fff", "#000");
-    queenAsset[1] = drawQueen("#000", "#fff");
-    kingAsset[0] = drawKing("#fff", "#000", true);
-    kingAsset[1] = drawKing("#000", "#fff", true);
-    pawnAsset[0] = drawPawn("#fff", "#000");
-    pawnAsset[1] = drawPawn("#000", "#fff");
+    assets[0][0] = drawKing("#fff", "#000", true);
+    assets[0][1] = drawKing("#000", "#fff", true);
+    assets[1][0] = drawQueen("#fff", "#000");
+    assets[1][1] = drawQueen("#000", "#fff");
+    assets[2][0] = drawRook("#fff", "#000");
+    assets[2][1] = drawRook("#000", "#fff");
+    assets[3][0] = drawKnight("#fff", "#000");
+    assets[3][1] = drawKnight("#000", "#fff");
+    assets[4][0] = drawBishop("#fff", "#000");
+    assets[4][1] = drawBishop("#000", "#fff");
+    assets[5][0] = drawPawn("#fff", "#000");
+    assets[5][1] = drawPawn("#000", "#fff");
     castleAsset = drawKing(undefined, "rgba(255, 255, 255, .5)", false);
 }
 
@@ -539,14 +517,14 @@ function buildPlayers() {
         const temp = new player(playerNames[i]);
         const side = 7 - 7 * i;
         for (let i2 = 0; i2 < 2; i2++) {
-            temp.pieces.push(new rook(new coor(0 + 7 * i2, side), rookAsset[i]));
-            temp.pieces.push(new knight(new coor(1 + 5 * i2, side), knightAsset[i]));
-            temp.pieces.push(new bishop(new coor(2 + 3 * i2, side), bishopAsset[i]));
+            temp.pieces.push(new rook(new coor(0 + 7 * i2, side), assets[2][i]));
+            temp.pieces.push(new knight(new coor(1 + 5 * i2, side), assets[3][i]));
+            temp.pieces.push(new bishop(new coor(2 + 3 * i2, side), assets[4][i]));
         }
-        temp.pieces.push(new queen(new coor(3, side), queenAsset[i]));
-        temp.pieces.push(new king(new coor(4, side), kingAsset[i]));
+        temp.pieces.push(new queen(new coor(3, side), assets[1][i]));
+        temp.pieces.push(new king(new coor(4, side), assets[0][i]));
         for (let x = 0; x < 8; x++) {
-            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), pawnAsset[i], -1 + 2 * i));
+            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), assets[5][i], -1 + 2 * i));
         }
         players.push(temp);
     }
@@ -762,16 +740,16 @@ function promotePawn(x, y) {
     let temp;
     switch (document.getElementById("infoSelect").value) {
         case "Queen":
-            temp = new queen(new coor(x, y), queenAsset[whosTurn(true)]);
+            temp = new queen(new coor(x, y), assets[1][whosTurn(true)]);
             break;
         case "Knight":
-            temp = new knight(new coor(x, y), knightAsset[whosTurn(true)]);
+            temp = new knight(new coor(x, y), assets[3][whosTurn(true)]);
             break;
         case "Rook":
-            temp = new rook(new coor(x, y), rookAsset[whosTurn(true)]);
+            temp = new rook(new coor(x, y), assets[2][whosTurn(true)]);
             break;
         case "Bishop":
-            temp = new bishop(new coor(x, y), bishopAsset[whosTurn(true)]);
+            temp = new bishop(new coor(x, y), assets[4][whosTurn(true)]);
     }
     moveHistory.at(-1).note += `+${temp.name}`;
     temp.start = false;
