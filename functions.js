@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 const menu = document.getElementById("menu");
 const canvasx = canvas.offsetLeft;
 const canvasy = canvas.offsetTop;
-const assets = Array(6).fill().map(() => Array(2));
+const pieceAssets = Array(6).fill().map(() => Array(2));
 const body = document.body;
 const html = document.documentElement;
 const promotions = ["Queen", "Knight", "Rook", "Bishop"];
@@ -47,13 +47,13 @@ function rescaling() {
     drawAssets();
     players.forEach((item, i) => {
         for (let item2 of item.pieces) {
-            item2.asset = assets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
+            item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
         };
     });
     drawGame();
 }
 
-//draw assets
+//draw pieceAssets
 function scalePoint(i) {
     return i * (grid / 100);
 }
@@ -101,18 +101,18 @@ function drawAssets() {
         brdCtx.fillText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
         brdCtx.fillText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
-    assets[0][0] = drawKing("#fff", "#000", true);
-    assets[0][1] = drawKing("#000", "#fff", true);
-    assets[1][0] = drawQueen("#fff", "#000");
-    assets[1][1] = drawQueen("#000", "#fff");
-    assets[2][0] = drawRook("#fff", "#000");
-    assets[2][1] = drawRook("#000", "#fff");
-    assets[3][0] = drawKnight("#fff", "#000");
-    assets[3][1] = drawKnight("#000", "#fff");
-    assets[4][0] = drawBishop("#fff", "#000");
-    assets[4][1] = drawBishop("#000", "#fff");
-    assets[5][0] = drawPawn("#fff", "#000");
-    assets[5][1] = drawPawn("#000", "#fff");
+    pieceAssets[0][0] = drawKing("#fff", "#000", true);
+    pieceAssets[0][1] = drawKing("#000", "#fff", true);
+    pieceAssets[1][0] = drawQueen("#fff", "#000");
+    pieceAssets[1][1] = drawQueen("#000", "#fff");
+    pieceAssets[2][0] = drawRook("#fff", "#000");
+    pieceAssets[2][1] = drawRook("#000", "#fff");
+    pieceAssets[3][0] = drawKnight("#fff", "#000");
+    pieceAssets[3][1] = drawKnight("#000", "#fff");
+    pieceAssets[4][0] = drawBishop("#fff", "#000");
+    pieceAssets[4][1] = drawBishop("#000", "#fff");
+    pieceAssets[5][0] = drawPawn("#fff", "#000");
+    pieceAssets[5][1] = drawPawn("#000", "#fff");
     castleAsset = drawKing(undefined, "rgba(255, 255, 255, .5)", false);
 }
 
@@ -516,14 +516,14 @@ function buildPlayers() {
         const temp = new player(playerNames[i]);
         const side = 7 - 7 * i;
         for (let i2 = 0; i2 < 2; i2++) {
-            temp.pieces.push(new rook(new coor(0 + 7 * i2, side), assets[2][i]));
-            temp.pieces.push(new knight(new coor(1 + 5 * i2, side), assets[3][i]));
-            temp.pieces.push(new bishop(new coor(2 + 3 * i2, side), assets[4][i]));
+            temp.pieces.push(new rook(new coor(0 + 7 * i2, side), pieceAssets[2][i]));
+            temp.pieces.push(new knight(new coor(1 + 5 * i2, side), pieceAssets[3][i]));
+            temp.pieces.push(new bishop(new coor(2 + 3 * i2, side), pieceAssets[4][i]));
         }
-        temp.pieces.push(new queen(new coor(3, side), assets[1][i]));
-        temp.pieces.push(new king(new coor(4, side), assets[0][i]));
+        temp.pieces.push(new queen(new coor(3, side), pieceAssets[1][i]));
+        temp.pieces.push(new king(new coor(4, side), pieceAssets[0][i]));
         for (let x = 0; x < 8; x++) {
-            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), assets[5][i], -1 + 2 * i));
+            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), pieceAssets[5][i], -1 + 2 * i));
         }
         players.push(temp);
     }
@@ -739,16 +739,16 @@ function promotePawn(x, y) {
     let temp;
     switch (document.getElementById("infoSelect").value) {
         case "Queen":
-            temp = new queen(new coor(x, y), assets[1][whosTurn(true)]);
+            temp = new queen(new coor(x, y), pieceAssets[1][whosTurn(true)]);
             break;
         case "Knight":
-            temp = new knight(new coor(x, y), assets[3][whosTurn(true)]);
+            temp = new knight(new coor(x, y), pieceAssets[3][whosTurn(true)]);
             break;
         case "Rook":
-            temp = new rook(new coor(x, y), assets[2][whosTurn(true)]);
+            temp = new rook(new coor(x, y), pieceAssets[2][whosTurn(true)]);
             break;
         case "Bishop":
-            temp = new bishop(new coor(x, y), assets[4][whosTurn(true)]);
+            temp = new bishop(new coor(x, y), pieceAssets[4][whosTurn(true)]);
     }
     moveHistory.at(-1).note += `+${temp.name}`;
     temp.start = false;
