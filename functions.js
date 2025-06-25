@@ -47,8 +47,7 @@ function rescaling() {
     drawAssets();
     players.forEach((item, i) => {
         for (let item2 of item.pieces) {
-            const i2 = ["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name);
-            item2.asset = assets[i2][i];
+            item2.asset = assets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
         };
     });
     drawGame();
