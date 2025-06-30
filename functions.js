@@ -515,15 +515,17 @@ function buildPlayers() {
     for (let i = 0; i < 2; i++) {
         const temp = new player(playerNames[i]);
         const side = 7 - 7 * i;
-        for (let i2 = 0; i2 < 2; i2++) {
-            temp.pieces.push(new rook(new coor(0 + 7 * i2, side), pieceAssets[2][i]));
-            temp.pieces.push(new knight(new coor(1 + 5 * i2, side), pieceAssets[3][i]));
-            temp.pieces.push(new bishop(new coor(2 + 3 * i2, side), pieceAssets[4][i]));
+        const pawnSide = 6 - 5 * i;
+        const pawnDir = -1 + 2 * i;
+        for (let y = 0; y < 2; y++) {
+            temp.pieces.push(new rook(new coor(0 + 7 * y, side), pieceAssets[2][i]));
+            temp.pieces.push(new knight(new coor(1 + 5 * y, side), pieceAssets[3][i]));
+            temp.pieces.push(new bishop(new coor(2 + 3 * y, side), pieceAssets[4][i]));
         }
         temp.pieces.push(new queen(new coor(3, side), pieceAssets[1][i]));
         temp.pieces.push(new king(new coor(4, side), pieceAssets[0][i]));
         for (let x = 0; x < 8; x++) {
-            temp.pieces.push(new pawn(new coor(x, 6 - 5 * i), pieceAssets[5][i], -1 + 2 * i));
+            temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
         }
         players.push(temp);
     }
