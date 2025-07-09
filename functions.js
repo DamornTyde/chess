@@ -550,23 +550,23 @@ function drawGame() {
         ctx.fillRect(temp.from.x * grid, temp.from.y * grid, grid, grid);
         ctx.fillRect(temp.to.x * grid, temp.to.y * grid, grid, grid);
     }
-    players.forEach(item => {
-        item.pieces.forEach(item2 => {
-            item2.drawPiece();
-        });
-    });
+    for (let p of players) {
+        for (let item of p.pieces) {
+            item.drawPiece();
+        }
+    }
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
     ctx.strokeStyle = "rgba(0, 255, 0, .7)";
     if (slct != undefined && slct.name != "pawn") {
         ctx.fillStyle = "rgba(0, 255, 0, .5)";
-        moveTile.forEach(item => {
+        for (let item of moveTile) {
             drawOption(item, temp);
-        });
-        castleMove.forEach(item => {
+        }
+        for (let item of castleMove) {
             drawArc(item);
             ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
-        });
+        }
         ctx.fillStyle = "rgba(0, 255, 255, .2)";
         ctx.strokeStyle = "rgba(0, 255, 255, .2)";
         falseMoves(moveTile, temp, false);
@@ -574,13 +574,13 @@ function drawGame() {
         moveTile.forEach((temp2, i) => {
             ctx.fillStyle = "rgba(0, 255, 0, .5)";
             ctx.strokeStyle = "rgba(0, 255, 0, .7)";
-            temp2.forEach(item => {
+            for (let item of temp2) {
                 if (i === 0) {
                     drawArc(item);
                 } else {
                     drawX(item);
                 }
-            });
+            }
             ctx.fillStyle = "rgba(0, 255, 255, 0.2)";
             ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
             if (i === 0) {
