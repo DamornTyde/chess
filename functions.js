@@ -1033,7 +1033,7 @@ function getPositionPoints(i, attack) {
 
 function getCapturePoints(pos, enemy, friends) {
     const capture = players[whosTurn(true)].pieces.find(i => isCoor(i.pos, pos));
-    let points = 0
+    let points = 0;
     if (capture !== undefined) {
         const captureAtack = capture.move(false);
         points = capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
