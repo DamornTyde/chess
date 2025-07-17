@@ -994,13 +994,12 @@ function bot() {
     const moves = [];
     const enemy = players[whosTurn(true)].pieces;
     const own = players[whosTurn(false)].pieces;
-    const playerPieces = players[whosTurn(false)].pieces;
-    for (let i of playerPieces) {
+    for (let i of own) {
         const pieceAttack = i.move(false);
         const enemyAttack = getAttackGrid(i.pos);
         const ownAttack = getAttackGrid(i.pos, false);
-        const base = getBasePoints(enemy, ownAttack) - getBasePoints(own, enemyAttack) - getPositionPoints(i, ownAttack) -
-            getBasePoints(enemy, pieceAttack) - getBasePoints(own, pieceAttack) + getPositionPoints(i, enemyAttack);
+        const friends = own.filter(x => !isCoor(x.pos, i.pos));
+        const base = getBasePoints(enemy, ownAttack) - getBasePoints(friends, enemyAttack) - getBasePoints(enemy, pieceAttack) - getBasePoints(friends, pieceAttack);
         const pieceMoves = i.move(true).flat().map(x => new movement(i.pos, x));
         const clone = Object.create(i);
         for (let m of pieceMoves) {
@@ -1011,8 +1010,8 @@ function bot() {
             } else {
                 cloneAttack = clone.move(false);
             }
-            const points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(own, cloneAttack) - getPositionPoints(i, cloneAttack) - 
-                getPositionPoints(clone, enemyAttack) + getPositionPoints(clone, ownAttack) + getCapturePoints(clone.pos, enemy, own);
+            const points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
+            getPositionPoints(clone, ownAttack) + getCapturePoints(clone.pos, enemy, friends);
             m.points = points;
             if (moves.length === 0 || moves[0].points === points) {
                 moves.push(m);
@@ -1032,13 +1031,13 @@ function getPositionPoints(i, attack) {
     return i.points * coorFilter(attack, [i.pos], true).length;
 }
 
-function getCapturePoints(pos, enemy, own) {
+function getCapturePoints(pos, enemy, friends) {
     const capture = players[whosTurn(true)].pieces.find(i => isCoor(i.pos, pos));
     if (capture === undefined) {
         return 0;
     }
     const captureAtack = capture.move(false);
-    return capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(own, captureAtack);
+    return capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
 }
 
 function botSelect(action, promotion) {
