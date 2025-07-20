@@ -1004,12 +1004,7 @@ function bot() {
         const clone = Object.create(i);
         for (let m of pieceMoves) {
             clone.pos = m.to;
-            let cloneAttack = [];
-            if (straight.includes(clone.name)) {
-                cloneAttack = clone.move(false, i.pos);
-            } else {
-                cloneAttack = clone.move(false);
-            }
+            const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
             const points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
             getPositionPoints(clone, ownAttack) + getCapturePoints(clone.pos, enemy, friends);
             m.points = points;
@@ -1036,7 +1031,7 @@ function getCapturePoints(pos, enemy, friends) {
     let points = 0;
     if (capture !== undefined) {
         const captureAtack = capture.move(false);
-        points = capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
+        points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
     }
     return points;
 }
