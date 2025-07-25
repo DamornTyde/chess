@@ -23,11 +23,12 @@ let moveHistory = [];
 let botPlayers = [];
 
 //autoplay
-window.onload = function () {
+window.onload = () => {
     scaling();
     drawAssets();
     buildPlayers();
 };
+window.onresize = rescaling;
 
 menu.appendChild(createButton("New Game", () => buildPlayers()));
 
@@ -39,8 +40,6 @@ function scaling() {
     canvas.width = grid * 8;
     canvas.height = canvas.width;
 }
-
-window.onresize = rescaling;
 
 function rescaling() {
     scaling();
