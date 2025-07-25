@@ -112,7 +112,7 @@ function drawAssets() {
     pieceAssets[4][1] = drawBishop("#000", "#fff");
     pieceAssets[5][0] = drawPawn("#fff", "#000");
     pieceAssets[5][1] = drawPawn("#000", "#fff");
-    castleAsset = drawKing(undefined, "rgba(255, 255, 255, .5)", false);
+    castleAsset = drawKing(undefined, "#fff8", false);
 }
 
 function drawRook(colour, outline) {
@@ -537,13 +537,13 @@ function buildPlayers() {
 function drawGame() {
     ctx.drawImage(board, 0, 0);
     if (msPlc != undefined) {
-        ctx.fillStyle = "rgba(255, 255, 0, .5)";
+        ctx.fillStyle = "#ff08";
         ctx.fillRect(msPlc.x * grid, msPlc.y * grid, grid, grid);
     }
     if (slct != undefined) {
         ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
     }
-    ctx.fillStyle = "rgba(0, 0, 255, .3)";
+    ctx.fillStyle = "#00f5";
     if (moveHistory.length > 0) {
         const temp = moveHistory.at(-1);
         ctx.fillRect(temp.from.x * grid, temp.from.y * grid, grid, grid);
@@ -556,9 +556,9 @@ function drawGame() {
     }
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
-    ctx.strokeStyle = "rgba(0, 255, 0, .7)";
+    ctx.strokeStyle = "#0f06";
     if (slct != undefined && slct.name != "pawn") {
-        ctx.fillStyle = "rgba(0, 255, 0, .5)";
+        ctx.fillStyle = "#0f08";
         for (let item of moveTile) {
             drawOption(item, temp);
         }
@@ -566,13 +566,13 @@ function drawGame() {
             drawArc(item);
             ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
         }
-        ctx.fillStyle = "rgba(0, 255, 255, .2)";
-        ctx.strokeStyle = "rgba(0, 255, 255, .2)";
+        ctx.fillStyle = "#0ff3";
+        ctx.strokeStyle = "#0ff3";
         falseMoves(moveTile, temp, false);
     } else {
         moveTile.forEach((temp2, i) => {
-            ctx.fillStyle = "rgba(0, 255, 0, .5)";
-            ctx.strokeStyle = "rgba(0, 255, 0, .7)";
+            ctx.fillStyle = "#0f08";
+            ctx.strokeStyle = "#0f06";
             for (let item of temp2) {
                 if (i === 0) {
                     drawArc(item);
@@ -580,8 +580,8 @@ function drawGame() {
                     drawX(item);
                 }
             }
-            ctx.fillStyle = "rgba(0, 255, 255, 0.2)";
-            ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
+            ctx.fillStyle = "#0ff3";
+            ctx.strokeStyle = "#0ff3";
             if (i === 0) {
                 const item = new coor(slct.pos.x, slct.pos.y + slct.frwrd);
                 if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
