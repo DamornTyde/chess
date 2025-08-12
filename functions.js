@@ -892,7 +892,7 @@ function kingCheck(temp, p) {
         if (includesCoor(threat[0], check, true)) {
             return coorFilter(temp, royalCheck(k, true).filter(i => isCoor(threat[0], i.at(-1))), true);
         }
-        return coorFilter(threat, temp, true);
+        return threat;
     }
     return temp;
 }
