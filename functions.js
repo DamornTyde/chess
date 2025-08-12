@@ -342,7 +342,7 @@ class king extends piece {
         super("king", 0, pos, asset);
     }
     move(check) {
-        let temp = royalCheck(this.pos, false).flat(3);
+        let temp = royalCheck(this.pos, false).flat(2);
         if (check) {
             const temp2 = getAttackGrid(this.pos);
             temp = coorFilter(temp, temp2, false);
@@ -357,7 +357,7 @@ class queen extends piece {
         super("queen", 9, pos, asset);
     }
     move(check, ghost = this.pos) {
-        let temp = royalCheck(this.pos, true, ghost).flat(3);
+        let temp = royalCheck(this.pos, true, ghost).flat(2);
         if (check) {
             temp = kingCheck(temp, this.pos);
             return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
@@ -825,7 +825,9 @@ function royalCheck(pos, p, ghost = pos, r = 0) {
         temp.push(royalExend(pos, new coor(r, i), p, ghost));
         if (r === 0) {
             temp.push(royalExend(pos, new coor(i, r), p, ghost));
-            temp.push(royalCheck(pos, p, ghost, i));
+            for (let x of royalCheck(pos, p, ghost, i)) {
+                temp.push(x);
+            }
         }
     }
     return temp;
@@ -865,10 +867,6 @@ function straightLiners(opp, inc = true) {
     return players[whosTurn(opp)].pieces.filter(x => inc ? straight.includes(x.name): !straight.includes(x.name));
 }
 
-function posCheck(a, b) {
-    return new coor(subCheck(a.x, b.x), subCheck(a.y, b.y));
-}
-
 function subCheck(a, b) {
     if (a < b) return 1;
     else if (a > b) return -1;
@@ -877,16 +875,22 @@ function subCheck(a, b) {
 
 function kingCheck(temp, p) {
     const k = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
-    temp = straightLinersCheck(temp, p, k);
+    const enemy = straightLiners(true);
+    const temp2 = royalCheck(k, true, p).find(x => includesCoor(p, x, true));
+    if (temp2 !== undefined) {
+        const enemypiece = enemy.find(y => isCoor(y.pos, temp2.at(-1)));
+        if (enemypiece !== undefined && includesCoor(p, enemypiece.move(false), true)) {
+            temp = coorFilter(temp, temp2, true);
+        }
+    }
     const threat = kingThreat();
     if (threat.length > 1) {
         return [];
     }
     if (threat.length === 1) {
-        const check = straightLiners(true).map(i => i.pos);
+        const check = enemy.map(i => i.pos);
         if (includesCoor(threat[0], check, true)) {
-            const fltr = lineCheck(k, posCheck(k, threat[0]));
-            return coorFilter(temp, fltr, true);
+            return coorFilter(temp, royalCheck(k, true).filter(i => isCoor(threat[0], i.at(-1))), true);
         }
         return coorFilter(threat, temp, true);
     }
@@ -896,19 +900,6 @@ function kingCheck(temp, p) {
 function kingThreat() {
     const temp = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
     return players[whosTurn(true)].pieces.filter(i => includesCoor(temp, i.move(false), true)).map(i => i.pos);
-}
-
-function straightLinersCheck(temp, p, k) {
-    straightLiners(true).forEach(item => {
-        if (includesCoor(p, item.move(false), true)) {
-            const check = lineCheck(item, posCheck(p, item.pos), p);
-            if (check.length > 0 && isCoor(check.at(-1), k)) {
-                check.push(item.pos);
-                return coorFilter(temp, check, true);
-            }
-        }
-    });
-    return temp;
 }
 
 function getAttackGrid(ghost, opp = true) {
