@@ -890,7 +890,7 @@ function kingCheck(temp, p) {
     if (threat.length === 1) {
         const check = enemy.map(i => i.pos);
         if (includesCoor(threat[0], check, true)) {
-            return coorFilter(temp, royalCheck(k, true).filter(i => isCoor(threat[0], i.at(-1))), true);
+            return coorFilter(temp, royalCheck(k, true).find(i => isCoor(threat[0], i.at(-1))), true);
         }
         return threat;
     }
