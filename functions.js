@@ -985,9 +985,8 @@ function bot() {
     const enemy = players[whosTurn(true)].pieces;
     const own = players[whosTurn(false)].pieces;
     for (let i of own) {
-        const pieceAttack = i.move(false);
         const enemyAttack = getAttackGrid(i.pos);
-        const ownAttack = coorFilter(getAttackGrid(i.pos, false), pieceAttack, false);
+        const ownAttack = coorFilter(getAttackGrid(i.pos, false), i.move(false), false);
         const friends = own.filter(x => !isCoor(x.pos, i.pos));
         const base = getBasePoints(enemy, ownAttack) - getBasePoints(friends, enemyAttack);
         const pieceMoves = i.move(true).flat().map(x => new movement(i.pos, x));
