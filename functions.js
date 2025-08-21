@@ -45,9 +45,7 @@ function rescaling() {
     scaling();
     drawAssets();
     players.forEach((item, i) => {
-        for (let item2 of item.pieces) {
-            item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
-        };
+        for (let item2 of item.pieces) item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
     });
     drawGame();
 }
@@ -86,9 +84,7 @@ function drawAssets() {
     brdCtx.fillRect(0, 0, canvas.width, canvas.width);
     brdCtx.fillStyle = light;
     for (let x = 0; x < 8; x++) {
-        for (let y = x % 2; y < 8; y += 2) {
-            brdCtx.fillRect(x * grid, y * grid, grid, grid);
-        }
+        for (let y = x % 2; y < 8; y += 2) brdCtx.fillRect(x * grid, y * grid, grid, grid);
     }
     brdCtx.font = `900 ${scalePoint(20)}px Arial`;
     for (let i = 1; i < 9; i++) {
@@ -385,9 +381,7 @@ class bishop extends piece {
     move(check, ghost = this.pos) {
         let temp = [];
         for (let i = -1; i < 2; i += 2) {
-            for (let i2 = -1; i2 < 2; i2 += 2) {
-                temp.push(lineCheck(this.pos, new coor(i, i2), ghost));
-            }
+            for (let i2 = -1; i2 < 2; i2 += 2) temp.push(lineCheck(this.pos, new coor(i, i2), ghost));
         }
         temp = temp.flat();
         if (check) {
@@ -442,9 +436,7 @@ class pawn extends piece {
             if (includesCoor(temp3, temp2, false)) {
                 temp[0].push(temp3);
                 temp3 = new coor(this.pos.x, this.pos.y + this.frwrd * 2)
-                if (this.start && includesCoor(temp3, temp2, false)) {
-                    temp[0].push(temp3);
-                }
+                if (this.start && includesCoor(temp3, temp2, false)) temp[0].push(temp3);
             }
             temp2 = getPiecesPos(whosTurn(true));
             for (let i = -1; i < 2; i += 2) {
@@ -453,19 +445,13 @@ class pawn extends piece {
                     temp[1].push(temp3);
                 } else {
                     const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, new coor(temp3.x, temp3.y - this.frwrd)));
-                    if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) {
-                        temp[1].push(temp3);
-                    }
+                    if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) temp[1].push(temp3);
                 }
             }
-            for (let i of temp) {
-                i = kingCheck(i, this.pos);
-            }
+            for (let i of temp) i = kingCheck(i, this.pos);
         } else {
             temp = [];
-            for (let i = -1; i < 2; i += 2) {
-                temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
-            }
+            for (let i = -1; i < 2; i += 2) temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
         }
         return temp;
     }
@@ -562,9 +548,7 @@ function drawGame() {
             ctx.strokeStyle = "#0ff3";
             if (i === 0) {
                 const item = new coor(slct.pos.x, slct.pos.y + slct.frwrd);
-                if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
-                    drawArc(item);
-                }
+                if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) drawArc(item);
             } else falseMoves(temp2, temp, true);
         });
     }
@@ -586,9 +570,7 @@ function drawX(item) {
 }
 
 function falseMoves(temp2, temp, opp) {
-    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(item => {
-        drawOption(item, temp);
-    });
+    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(item => {drawOption(item, temp);});
 }
 
 function drawOption(item, temp) {
@@ -621,9 +603,8 @@ function input(temp, promotion) {
         moveHistory.push(new move(slct.name, slct.pos, temp));
         if (slct.name === "pawn") {
             lastAction = moveHistory.length -1;
-            if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp)) {
-                slct.enPassant = moveHistory.length;
-            } else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
+            if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp)) slct.enPassant = moveHistory.length;
+            else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
                 const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, new coor(temp.x, temp.y - slct.frwrd)));
                 players[whosTurn(false)].pieces.splice(temp3, 1);
                 moveHistory.at(-1).note = "-pawn";
@@ -725,9 +706,7 @@ function promotePawn(x, y) {
 
 function setBot() {
     botPlayers = [];
-    document.querySelectorAll(".checkBot").forEach((item, i) => {
-        if (item.checked) botPlayers.push(i);
-    });
+    document.querySelectorAll(".checkBot").forEach((item, i) => { if (item.checked) botPlayers.push(i); });
     document.getElementById("dark").remove();
     botMove();
 }
@@ -832,17 +811,13 @@ function kingCheck(temp, p) {
     const temp2 = royalCheck(k, true, p).find(x => includesCoor(p, x, true));
     if (temp2 !== undefined) {
         const enemypiece = enemy.find(y => isCoor(y.pos, temp2.at(-1)));
-        if (enemypiece !== undefined && includesCoor(p, enemypiece.move(false), true)) {
-            temp = coorFilter(temp, temp2, true);
-        }
+        if (enemypiece !== undefined && includesCoor(p, enemypiece.move(false), true)) temp = coorFilter(temp, temp2, true);
     }
     const threat = kingThreat();
     if (threat.length > 1) return [];
     if (threat.length === 1) {
         const check = enemy.map(i => i.pos);
-        if (includesCoor(threat[0], check, true)) {
-            return coorFilter(temp, royalCheck(k, true).find(i => isCoor(threat[0], i.at(-1))), true);
-        }
+        if (includesCoor(threat[0], check, true)) return coorFilter(temp, royalCheck(k, true).find(i => isCoor(threat[0], i.at(-1))), true);
         return threat;
     }
     return temp;
