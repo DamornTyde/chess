@@ -45,7 +45,7 @@ function rescaling() {
     scaling();
     drawAssets();
     players.forEach((item, i) => {
-        for (let item2 of item.pieces) item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
+        for (const item2 of item.pieces) item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
     });
     drawGame();
 }
@@ -83,11 +83,11 @@ function drawAssets() {
     brdCtx.fillStyle = dark;
     brdCtx.fillRect(0, 0, canvas.width, canvas.width);
     brdCtx.fillStyle = light;
-    for (let x = 0; x < 8; x++) {
-        for (let y = x % 2; y < 8; y += 2) brdCtx.fillRect(x * grid, y * grid, grid, grid);
+    for (const x = 0; x < 8; x++) {
+        for (const y = x % 2; y < 8; y += 2) brdCtx.fillRect(x * grid, y * grid, grid, grid);
     }
     brdCtx.font = `900 ${scalePoint(20)}px Arial`;
-    for (let i = 1; i < 9; i++) {
+    for (const i = 1; i < 9; i++) {
         if (i % 2 === 0) brdCtx.fillStyle = dark;
         else brdCtx.fillStyle = light;
         brdCtx.fillText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
@@ -317,7 +317,7 @@ class piece {
         this.pos = newPos;
     }
     moveCheck() {
-        for (let i = this.history.length - 1; i > 0; i--) {
+        for (const i = this.history.length - 1; i > 0; i--) {
             const a = this.history[i - 1].from;
             if (!isCoor(this.history[i].to, a)) return false;
             if (this.history.length - i === 4) return true;
@@ -361,7 +361,7 @@ class rook extends piece {
     }
     move(check, ghost = this.pos) {
         let temp = [];
-        for (let i = -1; i < 2; i += 2) {
+        for (const i = -1; i < 2; i += 2) {
             temp.push(lineCheck(this.pos, new coor(i, 0), ghost));
             temp.push(lineCheck(this.pos, new coor(0, i), ghost));
         }
@@ -380,8 +380,8 @@ class bishop extends piece {
     }
     move(check, ghost = this.pos) {
         let temp = [];
-        for (let i = -1; i < 2; i += 2) {
-            for (let i2 = -1; i2 < 2; i2 += 2) temp.push(lineCheck(this.pos, new coor(i, i2), ghost));
+        for (const i = -1; i < 2; i += 2) {
+            for (const i2 = -1; i2 < 2; i2 += 2) temp.push(lineCheck(this.pos, new coor(i, i2), ghost));
         }
         temp = temp.flat();
         if (check) {
@@ -400,8 +400,8 @@ class knight extends piece {
         let temp = [];
         let x;
         let y;
-        for (let i = -1; i < 2; i += 2) {
-            for (let i2 = -2; i2 < 3; i2 += 4) {
+        for (const i = -1; i < 2; i += 2) {
+            for (const i2 = -2; i2 < 3; i2 += 4) {
                 x = this.pos.x + i;
                 y = this.pos.y + i2;
                 if (coorCheck(x, y)) temp.push(new coor(x, y));
@@ -439,7 +439,7 @@ class pawn extends piece {
                 if (this.start && includesCoor(temp3, temp2, false)) temp[0].push(temp3);
             }
             temp2 = getPiecesPos(whosTurn(true));
-            for (let i = -1; i < 2; i += 2) {
+            for (const i = -1; i < 2; i += 2) {
                 temp3 = new coor(this.pos.x + i, this.pos.y + this.frwrd);
                 if (includesCoor(temp3, temp2, true)) {
                     temp[1].push(temp3);
@@ -448,10 +448,10 @@ class pawn extends piece {
                     if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) temp[1].push(temp3);
                 }
             }
-            for (let i of temp) i = kingCheck(i, this.pos);
+            for (const i of temp) i = kingCheck(i, this.pos);
         } else {
             temp = [];
-            for (let i = -1; i < 2; i += 2) temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
+            for (const i = -1; i < 2; i += 2) temp.push(new coor(this.pos.x + i, this.pos.y + this.frwrd));
         }
         return temp;
     }
@@ -486,19 +486,19 @@ function buildPlayers() {
     moveHistory = [];
     console.log("new game");
     const playerNames = ["White", "Black"];
-    for (let i = 0; i < 2; i++) {
+    for (const i = 0; i < 2; i++) {
         const temp = new player(playerNames[i]);
         const side = 7 - 7 * i;
         const pawnSide = 6 - 5 * i;
         const pawnDir = -1 + 2 * i;
-        for (let y = 0; y < 2; y++) {
+        for (const y = 0; y < 2; y++) {
             temp.pieces.push(new rook(new coor(0 + 7 * y, side), pieceAssets[2][i]));
             temp.pieces.push(new knight(new coor(1 + 5 * y, side), pieceAssets[3][i]));
             temp.pieces.push(new bishop(new coor(2 + 3 * y, side), pieceAssets[4][i]));
         }
         temp.pieces.push(new queen(new coor(3, side), pieceAssets[1][i]));
         temp.pieces.push(new king(new coor(4, side), pieceAssets[0][i]));
-        for (let x = 0; x < 8; x++) temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
+        for (const x = 0; x < 8; x++) temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
         players.push(temp);
     }
     drawGame();
@@ -520,16 +520,16 @@ function drawGame() {
         ctx.fillRect(temp.from.x * grid, temp.from.y * grid, grid, grid);
         ctx.fillRect(temp.to.x * grid, temp.to.y * grid, grid, grid);
     }
-    for (let p of players) {
-        for (let item of p.pieces) item.drawPiece();
+    for (const p of players) {
+        for (const item of p.pieces) item.drawPiece();
     }
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
     ctx.strokeStyle = "#0f06";
     if (slct != undefined && slct.name != "pawn") {
         ctx.fillStyle = "#0f08";
-        for (let item of moveTile) drawOption(item, temp);
-        for (let item of castleMove) {
+        for (const item of moveTile) drawOption(item, temp);
+        for (const item of castleMove) {
             drawArc(item);
             ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
         }
@@ -540,7 +540,7 @@ function drawGame() {
         moveTile.forEach((temp2, i) => {
             ctx.fillStyle = "#0f08";
             ctx.strokeStyle = "#0f06";
-            for (let item of temp2) {
+            for (const item of temp2) {
                 if (i === 0) drawArc(item);
                 else drawX(item);
             }
@@ -590,7 +590,7 @@ function input(temp, promotion) {
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp));
         moveTile = slct.move(true);
         if (slct.name === "king" && slct.start) {
-            for (let i = -1; i < 2; i += 2) {
+            for (const i = -1; i < 2; i += 2) {
                 const temp2 = lineCheck(slct.pos, new coor(i, 0));
                 const temp3 = temp2.at(-1);
                 const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
@@ -749,7 +749,7 @@ function lineCheck(pos, move, ghost = pos) {
     let temp2;
     if (Array.isArray(ghost)) temp2 = coorFilter(getPiecesPos(-1), ghost);
     else temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
-    for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
+    for (const i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
         const temp3 = new coor(pos.x + move.x * i, pos.y + move.y * i);
         if (coorCheck(temp3.x, temp3.y)) temp.push(temp3);
         else return temp;
@@ -759,11 +759,11 @@ function lineCheck(pos, move, ghost = pos) {
 
 function royalCheck(pos, p, ghost = pos, r = 0) {
     const temp = [];
-    for (let i = -1; i < 2; i += 2) {
+    for (const i = -1; i < 2; i += 2) {
         temp.push(royalExend(pos, new coor(r, i), p, ghost));
         if (r === 0) {
             temp.push(royalExend(pos, new coor(i, r), p, ghost));
-            for (let x of royalCheck(pos, p, ghost, i)) temp.push(x);
+            for (const x of royalCheck(pos, p, ghost, i)) temp.push(x);
         }
     }
     return temp;
@@ -908,13 +908,13 @@ function bot() {
     const moves = [];
     const enemy = players[whosTurn(true)].pieces;
     const own = players[whosTurn(false)].pieces;
-    for (let i of own) {
+    for (const i of own) {
         const enemyAttack = enemy.map(a => straight.includes(a.name) ? a.move(false, i.pos) : a.move(false)).flat();
         const friends = own.filter(b => !isCoor(b.pos, i.pos));
         const friendsAttack = friends.map(c => straight.includes(c.name) ? c.move(false, i.pos) : c.move(false)).flat();
         const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
         const clone = Object.create(i);
-        for (let m of i.move(true).flat().map(d => new movement(i.pos, d))) {
+        for (const m of i.move(true).flat().map(d => new movement(i.pos, d))) {
             clone.pos = m.to;
             const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
             let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
