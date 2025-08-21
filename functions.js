@@ -1019,7 +1019,7 @@ function getBlockPoints(pos, from, to, ghost) {
     from.filter(a => straight.includes(a.name)).forEach(b => {
         const temp2 = temp.find(c => isCoor(c.at(-1), b.pos));
         if (temp2 !== undefined && includesCoor(pos, b.move(false, ghost), true)) {
-            const temp3 = royalCheck(b.pos, true, ghost).find(d => includesCoor(pos, d));
+            const temp3 = royalCheck(b.pos, true, [ghost, pos]).find(d => includesCoor(pos, d));
             const temp4 = to.find(e => isCoor(e.pos, temp3.at(-1)));
             if (temp4 !== undefined) {
                 points += temp4.points;
