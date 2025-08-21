@@ -92,11 +92,8 @@ function drawAssets() {
     }
     brdCtx.font = `900 ${scalePoint(20)}px Arial`;
     for (let i = 1; i < 9; i++) {
-        if (i % 2 === 0) {
-            brdCtx.fillStyle = dark;
-        } else {
-            brdCtx.fillStyle = light;
-        }
+        if (i % 2 === 0) brdCtx.fillStyle = dark;
+        else brdCtx.fillStyle = light;
         brdCtx.fillText(i, scalePoint(5), (8 - i) * grid + scalePoint(20));
         brdCtx.fillText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
@@ -326,12 +323,8 @@ class piece {
     moveCheck() {
         for (let i = this.history.length - 1; i > 0; i--) {
             const a = this.history[i - 1].from;
-            if (!isCoor(this.history[i].to, a)) {
-                return false;
-            }
-            if (this.history.length - i === 4) {
-                return true;
-            }
+            if (!isCoor(this.history[i].to, a)) return false;
+            if (this.history.length - i === 4) return true;
         }
         return false;
     }
@@ -417,14 +410,10 @@ class knight extends piece {
             for (let i2 = -2; i2 < 3; i2 += 4) {
                 x = this.pos.x + i;
                 y = this.pos.y + i2;
-                if (coorCheck(x, y)) {
-                    temp.push(new coor(x, y));
-                }
+                if (coorCheck(x, y)) temp.push(new coor(x, y));
                 x = this.pos.x + i2;
                 y = this.pos.y + i
-                if (coorCheck(x, y)) {
-                    temp.push(new coor(x, y));
-                }
+                if (coorCheck(x, y)) temp.push(new coor(x, y));
             }
         }
         if (check) {
@@ -540,9 +529,7 @@ function drawGame() {
         ctx.fillStyle = "#ff08";
         ctx.fillRect(msPlc.x * grid, msPlc.y * grid, grid, grid);
     }
-    if (slct != undefined) {
-        ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
-    }
+    if (slct != undefined) ctx.fillRect(slct.pos.x * grid, slct.pos.y * grid, grid, grid);
     ctx.fillStyle = "#00f5";
     if (moveHistory.length > 0) {
         const temp = moveHistory.at(-1);
@@ -616,11 +603,8 @@ function falseMoves(temp2, temp, opp) {
 }
 
 function drawOption(item, temp) {
-    if (includesCoor(item, temp, false)) {
-        drawArc(item);
-    } else {
-        drawX(item);
-    }
+    if (includesCoor(item, temp, false)) drawArc(item);
+    else drawX(item);
 }
 
 //input
@@ -682,9 +666,7 @@ function input(temp, promotion) {
                 }
             });
         }
-        if (slct.start) {
-            slct.start = false;
-        }
+        if (slct.start) slct.start = false;
         endTurn();
     } else if (includesCoor(temp, castleMove, true)) {
         const temp2 = subCheck(slct.pos.x, temp.x);
@@ -812,11 +794,8 @@ function lineCheck(pos, move, ghost = pos) {
     else temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
     for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
         const temp3 = new coor(pos.x + move.x * i, pos.y + move.y * i);
-        if (coorCheck(temp3.x, temp3.y)) {
-            temp.push(temp3);
-        } else {
-            return temp;
-        }
+        if (coorCheck(temp3.x, temp3.y)) temp.push(temp3);
+        else return temp;
     }
     return temp;
 }
@@ -840,11 +819,8 @@ function royalExend(pos, move, p, ghost) {
         return lineCheck(pos, move, ghost);
     } else {
         const temp = new coor(pos.x + move.x, pos.y + move.y);
-        if (coorCheck(temp.x, temp.y)) {
-            return temp;
-        } else {
-            return [];
-        }
+        if (coorCheck(temp.x, temp.y)) return temp;
+        else return [];
     }
 }
 
@@ -886,9 +862,7 @@ function kingCheck(temp, p) {
         }
     }
     const threat = kingThreat();
-    if (threat.length > 1) {
-        return [];
-    }
+    if (threat.length > 1) return [];
     if (threat.length === 1) {
         const check = enemy.map(i => i.pos);
         if (includesCoor(threat[0], check, true)) {
@@ -928,9 +902,7 @@ function createInfo(content, onClicked) {
 function promoteInfo(x, y) {
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
-    promotions.forEach(item => {
-        temp.appendChild(new Option(item));
-    });
+    promotions.forEach(item => {temp.appendChild(new Option(item))});
     const temp2 = document.createElement("div");
     temp2.appendChild(document.createTextNode(`Promote pawn to:`));
     temp2.appendChild(temp);
@@ -1003,11 +975,8 @@ function bot() {
                 points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
             }
             m.points = points;
-            if (moves.length === 0 || moves[0].points === points) {
-                moves.push(m);
-            } else if (points > moves[0].points) {
-                moves.splice(0, moves.length, m);
-            }
+            if (moves.length === 0 || moves[0].points === points) moves.push(m);
+            else if (points > moves[0].points) moves.splice(0, moves.length, m);
         }
     }
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
@@ -1021,9 +990,7 @@ function getBlockPoints(pos, from, to, ghost) {
         if (temp2 !== undefined && includesCoor(pos, b.move(false, ghost), true)) {
             const temp3 = royalCheck(b.pos, true, [ghost, pos]).find(d => includesCoor(pos, d));
             const temp4 = to.find(e => isCoor(e.pos, temp3.at(-1)));
-            if (temp4 !== undefined) {
-                points += temp4.points;
-            }
+            if (temp4 !== undefined) points += temp4.points;
         }
     });
     return points;
