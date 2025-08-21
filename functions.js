@@ -994,7 +994,7 @@ function bot() {
             clone.pos = m.to;
             const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
             let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
-            getPositionPoints(clone, friendsAttack);
+            getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos);
             const capture = enemy.find(e => isCoor(m.to, e.pos));
             if (capture !== undefined) {
                 const captureAtack = capture.move(false);
@@ -1009,6 +1009,22 @@ function bot() {
         }
     }
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
+}
+
+function getBlockPoints(pos, from, to, ghost) {
+    let points = 0;
+    const temp = royalCheck(pos, true, ghost);
+    from.filter(a => straight.includes(a.name)).forEach(b => {
+        const temp2 = temp.find(c => isCoor(c.at(-1), b.pos));
+        if (temp2 !== undefined && includesCoor(pos, b.move(false, ghost), true)) {
+            const temp3 = royalCheck(b.pos, true, ghost).find(d => includesCoor(pos, d));
+            const temp4 = to.find(e => isCoor(e.pos, temp3.at(-1)));
+            if (temp4 !== undefined) {
+                points += temp4.points;
+            }
+        }
+    });
+    return points;
 }
 
 function getBasePoints(p, attack) {
