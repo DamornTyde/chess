@@ -512,9 +512,7 @@ function buildPlayers() {
         }
         temp.pieces.push(new queen(new coor(3, side), pieceAssets[1][i]));
         temp.pieces.push(new king(new coor(4, side), pieceAssets[0][i]));
-        for (let x = 0; x < 8; x++) {
-            temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
-        }
+        for (let x = 0; x < 8; x++) temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
         players.push(temp);
     }
     drawGame();
@@ -537,18 +535,14 @@ function drawGame() {
         ctx.fillRect(temp.to.x * grid, temp.to.y * grid, grid, grid);
     }
     for (let p of players) {
-        for (let item of p.pieces) {
-            item.drawPiece();
-        }
+        for (let item of p.pieces) item.drawPiece();
     }
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
     ctx.strokeStyle = "#0f06";
     if (slct != undefined && slct.name != "pawn") {
         ctx.fillStyle = "#0f08";
-        for (let item of moveTile) {
-            drawOption(item, temp);
-        }
+        for (let item of moveTile) drawOption(item, temp);
         for (let item of castleMove) {
             drawArc(item);
             ctx.drawImage(castleAsset, item.x * grid, item.y * grid);
@@ -561,11 +555,8 @@ function drawGame() {
             ctx.fillStyle = "#0f08";
             ctx.strokeStyle = "#0f06";
             for (let item of temp2) {
-                if (i === 0) {
-                    drawArc(item);
-                } else {
-                    drawX(item);
-                }
+                if (i === 0) drawArc(item);
+                else drawX(item);
             }
             ctx.fillStyle = "#0ff3";
             ctx.strokeStyle = "#0ff3";
@@ -574,9 +565,7 @@ function drawGame() {
                 if (includesCoor(item, temp2, false) && includesCoor(item, getPiecesPos(whosTurn(-1)), false)) {
                     drawArc(item);
                 }
-            } else {
-                falseMoves(temp2, temp, true);
-            }
+            } else falseMoves(temp2, temp, true);
         });
     }
 }
@@ -678,9 +667,7 @@ function input(temp, promotion) {
         slct.movePiece(temp);
         temp4.movePiece(new coor(temp.x - temp2, temp.y));
         endTurn();
-    } else {
-        clearMoveSet();
-    }
+    } else clearMoveSet();
     drawGame();
 }
 
@@ -706,16 +693,11 @@ function endTurn() {
             notify = true;
         }
     } else {
-        if (temp) {
-            createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
-        } else {
-            createGameInfo(`Check`);
-        }
+        if (temp) createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
+        else createGameInfo(`Check`);
         notify = true;
     }
-    if (!notify && !lock) {
-        botMove();
-    }
+    if (!notify && !lock) botMove();
 }
 
 function promotePawn(x, y) {
@@ -744,9 +726,7 @@ function promotePawn(x, y) {
 function setBot() {
     botPlayers = [];
     document.querySelectorAll(".checkBot").forEach((item, i) => {
-        if (item.checked) {
-            botPlayers.push(i);
-        }
+        if (item.checked) botPlayers.push(i);
     });
     document.getElementById("dark").remove();
     botMove();
@@ -756,9 +736,7 @@ document.getElementById("game").addEventListener("mousemove", function (e) {
     const item = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
     if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, moveTile.flat(), true) || includesCoor(item, castleMove, true)) {
         msPlc = item;
-    } else {
-        msPlc = undefined;
-    }
+    } else msPlc = undefined;
     drawGame();
 });
 
@@ -806,18 +784,15 @@ function royalCheck(pos, p, ghost = pos, r = 0) {
         temp.push(royalExend(pos, new coor(r, i), p, ghost));
         if (r === 0) {
             temp.push(royalExend(pos, new coor(i, r), p, ghost));
-            for (let x of royalCheck(pos, p, ghost, i)) {
-                temp.push(x);
-            }
+            for (let x of royalCheck(pos, p, ghost, i)) temp.push(x);
         }
     }
     return temp;
 }
 
 function royalExend(pos, move, p, ghost) {
-    if (p) {
-        return lineCheck(pos, move, ghost);
-    } else {
+    if (p) return lineCheck(pos, move, ghost);
+    else {
         const temp = new coor(pos.x + move.x, pos.y + move.y);
         if (coorCheck(temp.x, temp.y)) return temp;
         else return [];
