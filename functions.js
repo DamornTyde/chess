@@ -995,7 +995,7 @@ function bot() {
             const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
             let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
             getPositionPoints(clone, friendsAttack);
-            const capture = enemy.find(e => isCoor(i.pos, e.pos));
+            const capture = enemy.find(e => isCoor(m.to, e.pos));
             if (capture !== undefined) {
                 const captureAtack = capture.move(false);
                 points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
