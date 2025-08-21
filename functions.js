@@ -1032,7 +1032,7 @@ function getBasePoints(p, attack) {
 }
 
 function getPositionPoints(i, attack) {
-    return i.points * attack.filter(x => !isCoor(x, i.pos)).length;
+    return i.points * attack.filter(x => isCoor(x, i.pos)).length;
 }
 
 function botSelect(action, promotion) {
