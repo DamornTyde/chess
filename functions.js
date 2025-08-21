@@ -989,9 +989,8 @@ function bot() {
         const friends = own.filter(b => !isCoor(b.pos, i.pos));
         const friendsAttack = friends.map(c => straight.includes(c.name) ? c.move(false, i.pos) : c.move(false)).flat();
         const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
-        const pieceMoves = i.move(true).flat().map(d => new movement(i.pos, d));
         const clone = Object.create(i);
-        for (let m of pieceMoves) {
+        for (let m of i.move(true).flat().map(d => new movement(i.pos, d))) {
             clone.pos = m.to;
             const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
             let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
