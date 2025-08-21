@@ -807,7 +807,9 @@ function rangeCheck(i) {
 
 function lineCheck(pos, move, ghost = pos) {
     const temp = [];
-    const temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
+    let temp2;
+    if (Array.isArray(ghost)) temp2 = coorFilter(getPiecesPos(-1), ghost);
+    else temp2 = getPiecesPos(-1).filter(x => !isCoor(x, ghost));
     for (let i = 1; i === 1 || includesCoor(temp.at(-1), temp2, false); i++) {
         const temp3 = new coor(pos.x + move.x * i, pos.y + move.y * i);
         if (coorCheck(temp3.x, temp3.y)) {
