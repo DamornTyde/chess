@@ -570,7 +570,7 @@ function drawX(item) {
 }
 
 function falseMoves(temp2, temp, opp) {
-    coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp).forEach(item => {drawOption(item, temp);});
+    for (const item of coorFilter(coorFilter(slct.move(false), temp2, false), getPiecesPos(whosTurn(opp)), opp)) drawOption(item, temp);
 }
 
 function drawOption(item, temp) {
@@ -584,7 +584,7 @@ document.getElementById("game").addEventListener("click", function (e) {
     input(temp);
 });
 
-function input(temp, promotion) {
+function input(temp) {
     if (includesCoor(temp, getPiecesPos(whosTurn(false)), true) && !lock) {
         castleMove = [];
         slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp));
@@ -620,8 +620,8 @@ function input(temp, promotion) {
             const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos));
             players[whosTurn(true)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
-            if (promotion != undefined) {
-                document.querySelector("#infoSelect").value = promotion;
+            if (m.promotion != undefined) {
+                document.querySelector("#infoSelect").value = m.promotion;
                 document.querySelector("#ok").click();
             }
             return;
@@ -629,12 +629,12 @@ function input(temp, promotion) {
         slct.movePiece(temp);
         const exclude = ["pawn", "king"]
         if (!exclude.includes(slct.name) && slct.moveCheck()) {
-            players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name)).forEach(item => {
+            for (const item of players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name))) {
                 if (item.moveCheck()) {
                     createGameInfo("Draw because the game is going nowhere");
                     lock = true;
                 }
-            });
+            };
         }
         if (slct.start) slct.start = false;
         endTurn();
@@ -852,7 +852,7 @@ function createInfo(content, onClicked) {
 function promoteInfo(x, y) {
     const temp = document.createElement("select");
     temp.setAttribute("id", "infoSelect");
-    promotions.forEach(item => {temp.appendChild(new Option(item))});
+    for (const item of promotions) temp.appendChild(new Option(item));
     const temp2 = document.createElement("div");
     temp2.appendChild(document.createTextNode(`Promote pawn to:`));
     temp2.appendChild(temp);
@@ -884,7 +884,7 @@ function botInfo() {
     temp.appendChild(document.createTextNode("Check which player you want to be a bot."));
     temp.appendChild(document.createElement("br"));
     temp.appendChild(document.createElement("br"));
-    players.forEach(item => {
+    for (const item of players) {
         const checkBox = document.createElement("input");
         checkBox.setAttribute("type", "checkbox");
         checkBox.setAttribute("class", "checkBot");
@@ -893,7 +893,7 @@ function botInfo() {
         label.appendChild(document.createTextNode(` ${item.name}`));
         temp.appendChild(label);
         temp.appendChild(document.createElement("br"));
-    });
+    };
     body.appendChild(createInfo(temp, () => setBot()));
 }
 
@@ -915,34 +915,58 @@ function bot() {
         const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
         const clone = Object.create(i);
         for (const m of i.move(true).flat().map(d => new movement(i.pos, d))) {
-            clone.pos = m.to;
-            const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
-            let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
-            getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos);
-            const capture = enemy.find(e => isCoor(m.to, e.pos));
-            if (capture !== undefined) {
-                const captureAtack = capture.move(false);
-                points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
+            if (i.name === "pawn" && (m.to.x === 7 || m.to.x === 0)) {
+                for (const p of promotions) {
+                    let cloneP;
+                    m.promotion = p;
+                    switch (p) {
+                        case "Queen":
+                            cloneP = new queen(m.to ,"");
+                            break;
+                        case "Knight":
+                            cloneP = new knight(m.to, "");
+                            break;
+                        case "Rook":
+                            cloneP = new rook(m.to, "");
+                            break;
+                        case "Bishop":
+                            cloneP = new bishop(m.to, "");
+                    }
+                    getMovePoints(enemy, friends, enemyAttack, friendsAttack, cloneP, i, m, moves, base);
+                }
             }
-            m.points = points;
-            if (moves.length === 0 || moves[0].points === points) moves.push(m);
-            else if (points > moves[0].points) moves.splice(0, moves.length, m);
+            getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, moves, base);
         }
     }
-    setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)], promotions[Math.floor(Math.random() * promotions.length)]), 750);
+    setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)]), 750);
+}
+
+function getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, moves, base) {
+    clone.pos = m.to;
+    const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
+    let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
+    getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos);
+    const capture = enemy.find(e => isCoor(m.to, e.pos));
+    if (capture !== undefined) {
+        const captureAtack = capture.move(false);
+        points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
+    }
+    m.points = points;
+    if (moves.length === 0 || moves[0].points === points) moves.push(m);
+    else if (points > moves[0].points) moves.splice(0, moves.length, m);
 }
 
 function getBlockPoints(pos, from, to, ghost) {
     let points = 0;
     const temp = royalCheck(pos, true, ghost);
-    from.filter(a => straight.includes(a.name)).forEach(b => {
+    for (const b of from.filter(a => straight.includes(a.name))) {
         const temp2 = temp.find(c => isCoor(c.at(-1), b.pos));
         if (temp2 !== undefined && includesCoor(pos, b.move(false, ghost), true)) {
             const temp3 = royalCheck(b.pos, true, [ghost, pos]).find(d => includesCoor(pos, d));
             const temp4 = to.find(e => isCoor(e.pos, temp3.at(-1)));
             if (temp4 !== undefined) points += temp4.points;
         }
-    });
+    };
     return points;
 }
 
