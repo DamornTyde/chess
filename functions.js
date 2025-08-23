@@ -915,7 +915,7 @@ function bot() {
         const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
         const clone = Object.create(i);
         for (const m of i.move(true).flat().map(d => new movement(i.pos, d))) {
-            if (i.name === "pawn" && (m.to.x === 7 || m.to.x === 0)) {
+            if (i.name === "pawn" && (m.to.y === 7 || m.to.y === 0)) {
                 for (const p of promotions) {
                     let cloneP;
                     m.promotion = p;
