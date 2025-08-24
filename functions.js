@@ -427,10 +427,7 @@ class pawn extends piece {
     move(check) {
         let temp;
         if (check) {
-            temp = [
-                [],
-                []
-            ];
+            temp = Array(2).fill([]);
             let temp2 = getPiecesPos(-1);
             let temp3 = new coor(this.pos.x, this.pos.y + this.frwrd);
             if (includesCoor(temp3, temp2, false)) {
