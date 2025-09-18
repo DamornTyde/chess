@@ -918,16 +918,16 @@ function bot() {
                     m.promotion = p;
                     switch (p) {
                         case "Queen":
-                            cloneP = new queen(m.to ,"");
+                            cloneP = new queen(m.to, 0);
                             break;
                         case "Knight":
-                            cloneP = new knight(m.to, "");
+                            cloneP = new knight(m.to, 0);
                             break;
                         case "Rook":
-                            cloneP = new rook(m.to, "");
+                            cloneP = new rook(m.to, 0);
                             break;
                         case "Bishop":
-                            cloneP = new bishop(m.to, "");
+                            cloneP = new bishop(m.to, 0);
                     }
                     getMovePoints(enemy, friends, enemyAttack, friendsAttack, cloneP, i, m, moves, base);
                 }
@@ -955,11 +955,11 @@ function getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, 
 
 function getBlockPoints(pos, from, to, ghost) {
     let points = 0;
-    const temp = royalCheck(pos, true, ghost);
+    const temp = royalCheck(pos, true, ghost).filter(f => f.length > 0);
     for (const b of from.filter(a => straight.includes(a.name))) {
         const temp2 = temp.find(c => isCoor(c.at(-1), b.pos));
         if (temp2 !== undefined && includesCoor(pos, b.move(false, ghost), true)) {
-            const temp3 = royalCheck(b.pos, true, [ghost, pos]).find(d => includesCoor(pos, d));
+            const temp3 = royalCheck(b.pos, true, [ghost, pos]).find(d => includesCoor(pos, d, true));
             const temp4 = to.find(e => isCoor(e.pos, temp3.at(-1)));
             if (temp4 !== undefined) points += temp4.points;
         }
