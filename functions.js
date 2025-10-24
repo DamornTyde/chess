@@ -907,7 +907,10 @@ function bot() {
         const friendsAttack = friends.map(c => straight.includes(c.name) ? c.move(false, i.pos) : c.move(false)).flat();
         const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
         const clone = Object.create(i);
-        for (const m of i.move(true).flat().map(d => new movement(i.pos, d))) {
+        const cloneMove = clone.history.length === 0 ?
+            clone.move(true).flat().map(d => new movement(clone.pos, d)) :
+            clone.move(true).flat().filter(f => !isCoor(f, clone.history.at(-1).from)).map(e => new movement(clone.pos, e));
+        for (const m of cloneMove) {
             if (i.name === "pawn" && (m.to.y === 7 || m.to.y === 0)) {
                 for (const p of promotions) {
                     let cloneP;
