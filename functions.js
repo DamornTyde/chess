@@ -44,9 +44,6 @@ function scaling() {
 function rescaling() {
     scaling();
     drawAssets();
-    players.forEach((item, i) => {
-        for (const item2 of item.pieces) item2.asset = pieceAssets[["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === item2.name)][i];
-    });
     drawGame();
 }
 
@@ -94,17 +91,17 @@ function drawAssets() {
         brdCtx.fillText((i + 9).toString(18).toUpperCase(), i * grid - scalePoint(20), 8 * grid - scalePoint(5));
     }
     pieceAssets[0][0] = drawKing("#fff", "#000", true);
-    pieceAssets[0][1] = drawKing("#000", "#fff", true);
-    pieceAssets[1][0] = drawQueen("#fff", "#000");
+    pieceAssets[1][0] = drawKing("#000", "#fff", true);
+    pieceAssets[0][1] = drawQueen("#fff", "#000");
     pieceAssets[1][1] = drawQueen("#000", "#fff");
-    pieceAssets[2][0] = drawRook("#fff", "#000");
-    pieceAssets[2][1] = drawRook("#000", "#fff");
-    pieceAssets[3][0] = drawKnight("#fff", "#000");
-    pieceAssets[3][1] = drawKnight("#000", "#fff");
-    pieceAssets[4][0] = drawBishop("#fff", "#000");
-    pieceAssets[4][1] = drawBishop("#000", "#fff");
-    pieceAssets[5][0] = drawPawn("#fff", "#000");
-    pieceAssets[5][1] = drawPawn("#000", "#fff");
+    pieceAssets[0][2] = drawRook("#fff", "#000");
+    pieceAssets[1][2] = drawRook("#000", "#fff");
+    pieceAssets[0][3] = drawKnight("#fff", "#000");
+    pieceAssets[1][3] = drawKnight("#000", "#fff");
+    pieceAssets[0][4] = drawBishop("#fff", "#000");
+    pieceAssets[1][4] = drawBishop("#000", "#fff");
+    pieceAssets[0][5] = drawPawn("#fff", "#000");
+    pieceAssets[1][5] = drawPawn("#000", "#fff");
     castleAsset = drawKing(undefined, "#fff8", false);
 }
 
@@ -301,16 +298,16 @@ class player {
 }
 
 class piece {
-    constructor(name, points, pos, asset) {
+    constructor(name, points, pos, owner) {
         this.name = name;
         this.points = points;
         this.pos = pos;
-        this.asset = asset;
+        this.owner = owner;
         this.start = true;
         this.history = [];
     }
     drawPiece() {
-        ctx.drawImage(this.asset, this.pos.x * grid, this.pos.y * grid);
+        ctx.drawImage(pieceAssets[this.owner][["king", "queen", "rook", "knight", "bishop", "pawn"].findIndex(x => x === this.name)], this.pos.x * grid, this.pos.y * grid);
     }
     movePiece(newPos) {
         this.history.push(new movement(this.pos, newPos));
@@ -419,15 +416,15 @@ class knight extends piece {
 }
 
 class pawn extends piece {
-    constructor(pos, asset, frwrd) {
+    constructor(pos, asset) {
         super("pawn", 1, pos, asset);
-        this.frwrd = frwrd;
+        this.frwrd = -1 + 2 * asset;
         this.enPassant = -1;
     }
     move(check) {
         let temp;
         if (check) {
-            temp = Array(2).fill([]);
+            temp = [[], []];
             let temp2 = getPiecesPos(-1);
             let temp3 = new coor(this.pos.x, this.pos.y + this.frwrd);
             if (includesCoor(temp3, temp2, false)) {
@@ -487,15 +484,14 @@ function buildPlayers() {
         const temp = new player(playerNames[i]);
         const side = 7 - 7 * i;
         const pawnSide = 6 - 5 * i;
-        const pawnDir = -1 + 2 * i;
         for (let y = 0; y < 2; y++) {
-            temp.pieces.push(new rook(new coor(0 + 7 * y, side), pieceAssets[2][i]));
-            temp.pieces.push(new knight(new coor(1 + 5 * y, side), pieceAssets[3][i]));
-            temp.pieces.push(new bishop(new coor(2 + 3 * y, side), pieceAssets[4][i]));
+            temp.pieces.push(new rook(new coor(0 + 7 * y, side), i));
+            temp.pieces.push(new knight(new coor(1 + 5 * y, side), i));
+            temp.pieces.push(new bishop(new coor(2 + 3 * y, side), i));
         }
-        temp.pieces.push(new queen(new coor(3, side), pieceAssets[1][i]));
-        temp.pieces.push(new king(new coor(4, side), pieceAssets[0][i]));
-        for (let x = 0; x < 8; x++) temp.pieces.push(new pawn(new coor(x, pawnSide), pieceAssets[5][i], pawnDir));
+        temp.pieces.push(new queen(new coor(3, side), i));
+        temp.pieces.push(new king(new coor(4, side), i));
+        for (let x = 0; x < 8; x++) temp.pieces.push(new pawn(new coor(x, pawnSide), i));
         players.push(temp);
     }
     drawGame();
@@ -523,7 +519,7 @@ function drawGame() {
     const temp = getPiecesPos(whosTurn(true));
     ctx.lineWidth = scalePoint(10);
     ctx.strokeStyle = "#0f06";
-    if (slct != undefined && slct.name != "pawn") {
+    if (slct !== undefined && slct.name !== "pawn") {
         ctx.fillStyle = "#0f08";
         for (const item of moveTile) drawOption(item, temp);
         for (const item of castleMove) {
@@ -533,7 +529,7 @@ function drawGame() {
         ctx.fillStyle = "#0ff3";
         ctx.strokeStyle = "#0ff3";
         falseMoves(moveTile, temp, false);
-    } else {
+    } else if (slct !== undefined) {
         moveTile.forEach((temp2, i) => {
             ctx.fillStyle = "#0f08";
             ctx.strokeStyle = "#0f06";
@@ -682,16 +678,16 @@ function promotePawn(x, y) {
     let temp;
     switch (document.getElementById("infoSelect").value) {
         case "Queen":
-            temp = new queen(new coor(x, y), pieceAssets[1][whosTurn(true)]);
+            temp = new queen(new coor(x, y), whosTurn(true));
             break;
         case "Knight":
-            temp = new knight(new coor(x, y), pieceAssets[3][whosTurn(true)]);
+            temp = new knight(new coor(x, y), whosTurn(true));
             break;
         case "Rook":
-            temp = new rook(new coor(x, y), pieceAssets[2][whosTurn(true)]);
+            temp = new rook(new coor(x, y), whosTurn(true));
             break;
         case "Bishop":
-            temp = new bishop(new coor(x, y), pieceAssets[4][whosTurn(true)]);
+            temp = new bishop(new coor(x, y), whosTurn(true));
     }
     moveHistory.at(-1).note += `+${temp.name}`;
     temp.start = false;
@@ -943,7 +939,10 @@ function getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, 
     const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
     let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
     getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos);
-    const capture = enemy.find(e => isCoor(m.to, e.pos));
+    let capture = enemy.find(e => isCoor(m.to, e.pos));
+    if (capture === undefined && clone.name === "pawn") {
+        capture = enemy.filter(f => f.name === "pawn").find(g => isCoor(g.pos, new coor(m.to.x, m.to.y - clone.frwrd)));
+    }
     if (capture !== undefined) {
         const captureAtack = capture.move(false);
         points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
