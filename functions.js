@@ -478,7 +478,6 @@ function buildPlayers() {
     clearMoveSet();
     players = [];
     moveHistory = [];
-    console.log("new game");
     const playerNames = ["White", "Black"];
     for (let i = 0; i < 2; i++) {
         const temp = new player(playerNames[i]);
@@ -650,7 +649,6 @@ function endTurn() {
     const temp2 = moveHistory.at(-1);
     let notify = false;
     clearMoveSet();
-    console.log(`${temp2.name} ${JSON.stringify(temp2.from)} ${JSON.stringify(temp2.to)} ${temp2.note}`);
     if (moveHistory.length - lastAction === 50) {
         createGameInfo("Draw because the game is boring");
         lock = true;
