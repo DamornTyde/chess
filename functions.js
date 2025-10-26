@@ -646,7 +646,6 @@ function input(temp) {
 
 function endTurn() {
     const temp = players[whosTurn(false)].pieces.map(i => i.move(true)).flat().length === 0;
-    const temp2 = moveHistory.at(-1);
     let notify = false;
     clearMoveSet();
     if (moveHistory.length - lastAction === 50) {
