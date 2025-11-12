@@ -332,7 +332,7 @@ class king extends piece {
         if (check) {
             const temp2 = getAttackGrid(this.pos);
             temp = coorFilter(temp, temp2, false);
-            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(0)), false);
         }
         return temp;
     }
@@ -346,7 +346,7 @@ class queen extends piece {
         let temp = royalCheck(this.pos, true, ghost).flat(2);
         if (check) {
             temp = kingCheck(temp, this.pos);
-            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(0)), false);
         }
         return temp;
     }
@@ -365,7 +365,7 @@ class rook extends piece {
         temp = temp.flat();
         if (check) {
             temp = kingCheck(temp, this.pos);
-            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(0)), false);
         }
         return temp;
     }
@@ -383,7 +383,7 @@ class bishop extends piece {
         temp = temp.flat();
         if (check) {
             temp = kingCheck(temp, this.pos);
-            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(0)), false);
         }
         return temp;
     }
@@ -409,7 +409,7 @@ class knight extends piece {
         }
         if (check) {
             temp = kingCheck(temp, this.pos);
-            return coorFilter(temp, getPiecesPos(whosTurn(false)), false);
+            return coorFilter(temp, getPiecesPos(whosTurn(0)), false);
         }
         return temp;
     }
@@ -432,13 +432,13 @@ class pawn extends piece {
                 temp3 = new coor(this.pos.x, this.pos.y + this.frwrd * 2)
                 if (this.start && includesCoor(temp3, temp2, false)) temp[0].push(temp3);
             }
-            temp2 = getPiecesPos(whosTurn(true));
+            temp2 = getPiecesPos(whosTurn(1));
             for (let i = -1; i < 2; i += 2) {
                 temp3 = new coor(this.pos.x + i, this.pos.y + this.frwrd);
                 if (includesCoor(temp3, temp2, true)) {
                     temp[1].push(temp3);
                 } else {
-                    const temp4 = players[whosTurn(true)].pieces.find(p => isCoor(p.pos, new coor(temp3.x, temp3.y - this.frwrd)));
+                    const temp4 = players[whosTurn(1)].pieces.find(p => isCoor(p.pos, new coor(temp3.x, temp3.y - this.frwrd)));
                     if (temp4 != undefined && temp4.name === "pawn" && temp4.enPassant === moveHistory.length) temp[1].push(temp3);
                 }
             }
@@ -515,7 +515,7 @@ function drawGame() {
     for (const p of players) {
         for (const item of p.pieces) item.drawPiece();
     }
-    const temp = getPiecesPos(whosTurn(true));
+    const temp = getPiecesPos(whosTurn(1));
     ctx.lineWidth = scalePoint(10);
     ctx.strokeStyle = "#0f06";
     if (slct !== undefined && slct.name !== "pawn") {
@@ -577,15 +577,15 @@ document.getElementById("game").addEventListener("click", function (e) {
 });
 
 function input(temp) {
-    if (includesCoor(temp, getPiecesPos(whosTurn(false)), true) && !lock) {
+    if (includesCoor(temp, getPiecesPos(whosTurn(0)), true) && !lock) {
         castleMove = [];
-        slct = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp));
+        slct = players[whosTurn(0)].pieces.find(x => isCoor(x.pos, temp));
         moveTile = slct.move(true);
         if (slct.name === "king" && slct.start) {
             for (let i = -1; i < 2; i += 2) {
                 const temp2 = lineCheck(slct.pos, new coor(i, 0));
                 const temp3 = temp2.at(-1);
-                const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
+                const temp4 = players[whosTurn(0)].pieces.find(x => isCoor(x.pos, temp3));
                 if (temp4 !== undefined && temp4.name === "rook" && temp4.start && coorFilter([slct.pos, temp2.at(0), temp2.at(1)], getAttackGrid(temp4.pos), false).length === 3) {
                     castleMove.push(temp2.at(1));
                 }
@@ -596,21 +596,21 @@ function input(temp) {
         if (slct.name === "pawn") {
             lastAction = moveHistory.length -1;
             if (moveTile[0].length === 2 && isCoor(moveTile[0][1], temp)) slct.enPassant = moveHistory.length;
-            else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(false)), false)) {
-                const temp3 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, new coor(temp.x, temp.y - slct.frwrd)));
-                players[whosTurn(false)].pieces.splice(temp3, 1);
+            else if (includesCoor(temp, moveTile[1], true) && includesCoor(temp, getPiecesPos(whosTurn(0)), false)) {
+                const temp3 = players[whosTurn(0)].pieces.findIndex(x => isCoor(x.pos, new coor(temp.x, temp.y - slct.frwrd)));
+                players[whosTurn(0)].pieces.splice(temp3, 1);
                 moveHistory.at(-1).note = "-pawn";
             }
         }
-        if (includesCoor(temp, getPiecesPos(whosTurn(false)), true)) {
+        if (includesCoor(temp, getPiecesPos(whosTurn(0)), true)) {
             lastAction = moveHistory.length -1;
-            const temp2 = players[whosTurn(false)].pieces.findIndex(x => isCoor(x.pos, temp));
-            moveHistory.at(-1).note = `-${players[whosTurn(false)].pieces[temp2].name}`;
-            players[whosTurn(false)].pieces.splice(temp2, 1);
+            const temp2 = players[whosTurn(0)].pieces.findIndex(x => isCoor(x.pos, temp));
+            moveHistory.at(-1).note = `-${players[whosTurn(0)].pieces[temp2].name}`;
+            players[whosTurn(0)].pieces.splice(temp2, 1);
         }
         if (slct.name === "pawn" && (temp.y === 0 || temp.y === 7)) {
-            const temp4 = players[whosTurn(true)].pieces.findIndex(x => isCoor(x.pos, slct.pos));
-            players[whosTurn(true)].pieces.splice(temp4, 1);
+            const temp4 = players[whosTurn(1)].pieces.findIndex(x => isCoor(x.pos, slct.pos));
+            players[whosTurn(1)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
             if (m.promotion != undefined) {
                 document.querySelector("#infoSelect").value = m.promotion;
@@ -621,7 +621,7 @@ function input(temp) {
         slct.movePiece(temp);
         const exclude = ["pawn", "king"]
         if (!exclude.includes(slct.name) && slct.moveCheck()) {
-            for (const item of players[whosTurn(false)].pieces.filter(x => !exclude.includes(x.name))) {
+            for (const item of players[whosTurn(0)].pieces.filter(x => !exclude.includes(x.name))) {
                 if (item.moveCheck()) {
                     createGameInfo("Draw because the game is going nowhere");
                     lock = true;
@@ -633,7 +633,7 @@ function input(temp) {
     } else if (includesCoor(temp, castleMove, true)) {
         const temp2 = subCheck(slct.pos.x, temp.x);
         const temp3 = lineCheck(temp, new coor(temp2, 0)).at(-1);
-        const temp4 = players[whosTurn(false)].pieces.find(x => isCoor(x.pos, temp3));
+        const temp4 = players[whosTurn(0)].pieces.find(x => isCoor(x.pos, temp3));
         moveHistory.push(new move(slct.name, slct.pos, temp));
         moveHistory.at(-1).note = "castle";
         slct.start = false;
@@ -645,7 +645,7 @@ function input(temp) {
 }
 
 function endTurn() {
-    const temp = players[whosTurn(false)].pieces.map(i => i.move(true)).flat().length === 0;
+    const temp = players[whosTurn(0)].pieces.map(i => i.move(true)).flat().length === 0;
     let notify = false;
     clearMoveSet();
     if (moveHistory.length - lastAction === 50) {
@@ -660,11 +660,11 @@ function endTurn() {
     }
     if (kingThreat().length === 0) {
         if (temp) {
-            createGameInfo(`Stalemate (${players[whosTurn(false)].name} can't move)`);
+            createGameInfo(`Stalemate (${players[whosTurn(0)].name} can't move)`);
             notify = true;
         }
     } else {
-        if (temp) createGameInfo(`Checkmate (${players[whosTurn(true)].name} won)`);
+        if (temp) createGameInfo(`Checkmate (${players[whosTurn(1)].name} won)`);
         else createGameInfo(`Check`);
         notify = true;
     }
@@ -672,23 +672,10 @@ function endTurn() {
 }
 
 function promotePawn(x, y) {
-    let temp;
-    switch (document.getElementById("infoSelect").value) {
-        case "Queen":
-            temp = new queen(new coor(x, y), whosTurn(true));
-            break;
-        case "Knight":
-            temp = new knight(new coor(x, y), whosTurn(true));
-            break;
-        case "Rook":
-            temp = new rook(new coor(x, y), whosTurn(true));
-            break;
-        case "Bishop":
-            temp = new bishop(new coor(x, y), whosTurn(true));
-    }
+    const temp = changePiece(document.querySelector("#infoSelect").toLowerCase(), new coor(x, y), whosTurn(1));
     moveHistory.at(-1).note += `+${temp.name}`;
     temp.start = false;
-    players[whosTurn(true)].pieces.push(temp);
+    players[whosTurn(1)].pieces.push(temp);
     document.getElementById("dark").remove();
     endTurn();
     drawGame();
@@ -703,7 +690,7 @@ function setBot() {
 
 document.getElementById("game").addEventListener("mousemove", function (e) {
     const item = new coor(Math.floor((e.clientX - canvasx) / grid), Math.floor((e.clientY - canvasy) / grid));
-    if (includesCoor(item, getPiecesPos(whosTurn(false)), true) || includesCoor(item, moveTile.flat(), true) || includesCoor(item, castleMove, true)) {
+    if (includesCoor(item, getPiecesPos(whosTurn(0)), true) || includesCoor(item, moveTile.flat(), true) || includesCoor(item, castleMove, true)) {
         msPlc = item;
     } else msPlc = undefined;
     drawGame();
@@ -723,7 +710,7 @@ function okClicked() {
 
 //checks
 function whosTurn(opp) {
-    return (moveHistory.length + (opp ? 1 : 0)) % 2;
+    return (moveHistory.length + opp) % 2;
 }
 
 function coorCheck(x, y) {
@@ -796,7 +783,7 @@ function subCheck(a, b) {
 }
 
 function kingCheck(temp, p) {
-    const k = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
+    const k = players[whosTurn(0)].pieces.find(x => x.name === "king").pos;
     const enemy = straightLiners(true);
     const temp2 = royalCheck(k, true, p).find(x => includesCoor(p, x, true));
     if (temp2 !== undefined) {
@@ -814,12 +801,25 @@ function kingCheck(temp, p) {
 }
 
 function kingThreat() {
-    const temp = players[whosTurn(false)].pieces.find(x => x.name === "king").pos;
-    return players[whosTurn(true)].pieces.filter(i => includesCoor(temp, i.move(false), true)).map(i => i.pos);
+    const temp = players[whosTurn(0)].pieces.find(x => x.name === "king").pos;
+    return players[whosTurn(1)].pieces.filter(i => includesCoor(temp, i.move(false), true)).map(i => i.pos);
 }
 
 function getAttackGrid(ghost, opp = true) {
     return players[whosTurn(opp)].pieces.map(x => straight.includes(x.name) ? x.move(false, ghost) : x.move(false)).flat();
+}
+
+function changePiece(name, pos, owner) {
+    switch(name) {
+        case "rook":
+            return new rook(pos, owner);
+        case "knight":
+            return new knight(pos, owner);
+        case "bishop":
+            return new bishop(pos, owner);
+        case "queen":
+            return new queen(pos, owner);
+    }
 }
 
 //templating
@@ -889,15 +889,15 @@ function botInfo() {
 
 //bot
 function botMove() {
-    if (botPlayers.includes(whosTurn(false))) {
+    if (botPlayers.includes(whosTurn(0))) {
         bot();
     }
 }
 
 function bot() {
     const moves = [];
-    const enemy = players[whosTurn(true)].pieces;
-    const own = players[whosTurn(false)].pieces;
+    const enemy = players[whosTurn(1)].pieces;
+    const own = players[whosTurn(0)].pieces;
     for (const i of own) {
         const enemyAttack = enemy.map(a => straight.includes(a.name) ? a.move(false, i.pos) : a.move(false)).flat();
         const friends = own.filter(b => !isCoor(b.pos, i.pos));
@@ -910,25 +910,13 @@ function bot() {
         for (const m of cloneMove) {
             if (i.name === "pawn" && (m.to.y === 7 || m.to.y === 0)) {
                 for (const p of promotions) {
-                    let cloneP;
+                    const cloneP = changePiece(p.toLowerCase(), m.to, 0);
                     m.promotion = p;
-                    switch (p) {
-                        case "Queen":
-                            cloneP = new queen(m.to, 0);
-                            break;
-                        case "Knight":
-                            cloneP = new knight(m.to, 0);
-                            break;
-                        case "Rook":
-                            cloneP = new rook(m.to, 0);
-                            break;
-                        case "Bishop":
-                            cloneP = new bishop(m.to, 0);
-                    }
                     getMovePoints(enemy, friends, enemyAttack, friendsAttack, cloneP, i, m, moves, base);
                 }
+            } else {
+                getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, moves, base);
             }
-            getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, moves, base);
         }
     }
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)]), 750);
