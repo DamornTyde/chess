@@ -794,10 +794,14 @@ function kingCheck(temp, p) {
     if (threat.length > 1) return [];
     if (threat.length === 1) {
         const check = enemy.map(i => i.pos);
-        if (includesCoor(threat[0], check, true)) return coorFilter(temp, royalCheck(k, true).find(i => isCoor(threat[0], i.at(-1))), true);
+        if (includesCoor(threat[0], check, true)) return coorFilter(temp, royalCheck(k, true).find(a => kingFix(a, threat[0])), true);
         return threat;
     }
     return temp;
+}
+
+function kingFix(item, threat) {
+    return item.length > 0 ? isCoor(threat, item.at(-1)) : false;
 }
 
 function kingThreat() {
@@ -805,7 +809,7 @@ function kingThreat() {
     return players[whosTurn(1)].pieces.filter(i => includesCoor(temp, i.move(false), true)).map(i => i.pos);
 }
 
-function getAttackGrid(ghost, opp = true) {
+function getAttackGrid(ghost, opp = 1) {
     return players[whosTurn(opp)].pieces.map(x => straight.includes(x.name) ? x.move(false, ghost) : x.move(false)).flat();
 }
 
@@ -902,7 +906,8 @@ function bot() {
         const enemyAttack = enemy.map(a => straight.includes(a.name) ? a.move(false, i.pos) : a.move(false)).flat();
         const friends = own.filter(b => !isCoor(b.pos, i.pos));
         const friendsAttack = friends.map(c => straight.includes(c.name) ? c.move(false, i.pos) : c.move(false)).flat();
-        const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack);
+        const base = getBasePoints(enemy, friendsAttack) - getBasePoints(friends, enemyAttack) +
+            getKingPoints(enemy.find(f => f.name === "king").pos, enemy, false, friendsAttack) - friendKing(i, friends, enemyAttack);
         const clone = Object.create(i);
         const cloneMove = clone.history.length === 0 ?
             clone.move(true).flat().map(d => new movement(clone.pos, d)) :
@@ -922,11 +927,16 @@ function bot() {
     setTimeout(() => botSelect(moves[Math.floor(Math.random() * moves.length)]), 750);
 }
 
+function friendKing(i, friends, enemyAttack) {
+    return i.name !== "king" ? getKingPoints(friends.find(g => g.name === "king").pos, friends, true, enemyAttack) : getKingPoints(i.pos, friends, true, enemyAttack);
+}
+
 function getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, moves, base) {
     clone.pos = m.to;
     const cloneAttack = straight.includes(clone.name) ? clone.move(false, i.pos) : clone.move(false);
     let points = base + getBasePoints(enemy, cloneAttack) + getBasePoints(friends, cloneAttack) - getPositionPoints(clone, enemyAttack) +
-    getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos);
+        getPositionPoints(clone, friendsAttack) + getBlockPoints(m.to, enemy, friends, i.pos) - getBlockPoints(m.to, friends, enemy, i.pos) +
+        getKingPoints(enemy.find(a => a.name === "king").pos, enemy, false, cloneAttack, friendsAttack);
     let capture = enemy.find(e => isCoor(m.to, e.pos));
     if (capture === undefined && clone.name === "pawn") {
         capture = enemy.filter(f => f.name === "pawn").find(g => isCoor(g.pos, new coor(m.to.x, m.to.y - clone.frwrd)));
@@ -935,9 +945,20 @@ function getMovePoints(enemy, friends, enemyAttack, friendsAttack, clone, i, m, 
         const captureAtack = capture.move(false);
         points += capture.points + getBasePoints(enemy, captureAtack) + getBasePoints(friends, captureAtack);
     }
+    if (i.name === "king") {
+        points += getKingPoints(m.to, friends, false, enemyAttack);
+    }
     m.points = points;
     if (moves.length === 0 || moves[0].points === points) moves.push(m);
     else if (points > moves[0].points) moves.splice(0, moves.length, m);
+}
+
+function getKingPoints(king, friends, inFull, att, alt = []) {
+    const moves = coorFilter(royalCheck(king, false), friends.map(a => a.pos), false);
+    const maxRoom = moves.length;
+    const pointBase = 8 / maxRoom;
+    const points = (maxRoom - coorFilter(moves, coorFilter(att, alt, false), false).length) * pointBase;
+    return (inFull || coorFilter(moves, [att, alt].flat(), false) === 0) && includesCoor(king, att, true) ? points + 2 : points;
 }
 
 function getBlockPoints(pos, from, to, ghost) {
@@ -955,7 +976,7 @@ function getBlockPoints(pos, from, to, ghost) {
 }
 
 function getBasePoints(p, attack) {
-    return p.map(i => getPositionPoints(i, attack)).reduce((a, b) => a + b);
+    return p.length > 0 ? p.map(i => getPositionPoints(i, attack)).reduce((a, b) => a + b) : 0;
 }
 
 function getPositionPoints(i, attack) {
