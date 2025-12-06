@@ -576,7 +576,7 @@ document.getElementById("game").addEventListener("click", function (e) {
     input(temp);
 });
 
-function input(temp) {
+function input(temp, promotion) {
     if (includesCoor(temp, getPiecesPos(whosTurn(0)), true) && !lock) {
         castleMove = [];
         slct = players[whosTurn(0)].pieces.find(x => isCoor(x.pos, temp));
@@ -612,8 +612,8 @@ function input(temp) {
             const temp4 = players[whosTurn(1)].pieces.findIndex(x => isCoor(x.pos, slct.pos));
             players[whosTurn(1)].pieces.splice(temp4, 1);
             promoteInfo(temp.x, temp.y);
-            if (m.promotion != undefined) {
-                document.querySelector("#infoSelect").value = m.promotion;
+            if (promotion != undefined) {
+                document.querySelector("#infoSelect").value = promotion;
                 document.querySelector("#ok").click();
             }
             return;
@@ -793,9 +793,11 @@ function kingCheck(temp, p) {
     const threat = kingThreat();
     if (threat.length > 1) return [];
     if (threat.length === 1) {
-        const check = enemy.map(i => i.pos);
-        if (includesCoor(threat[0], check, true)) return coorFilter(temp, royalCheck(k, true).find(a => kingFix(a, threat[0])), true);
-        return threat;
+        if (temp.length > 0) {
+            const check = enemy.map(i => i.pos);
+            if (includesCoor(threat[0], check, true)) return coorFilter(temp, royalCheck(k, true).find(a => kingFix(a, threat[0])), true);
+            return threat;
+        }
     }
     return temp;
 }
@@ -958,7 +960,7 @@ function getKingPoints(king, friends, inFull, att, alt = []) {
     const maxRoom = moves.length;
     const pointBase = 8 / maxRoom;
     const points = (maxRoom - coorFilter(moves, coorFilter(att, alt, false), false).length) * pointBase;
-    return (inFull || coorFilter(moves, [att, alt].flat(), false) === 0) && includesCoor(king, att, true) ? points + 2 : points;
+    return (inFull || (coorFilter(moves, [att, alt].flat(), false) === 0 && points === 0)) && includesCoor(king, att, true) ? 2 : points;
 }
 
 function getBlockPoints(pos, from, to, ghost) {
